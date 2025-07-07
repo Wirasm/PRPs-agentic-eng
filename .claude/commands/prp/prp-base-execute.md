@@ -9,6 +9,7 @@ Implement a feature using the PRP file.
 1. **Load PRP**
    - Read the specified PRP file
    - Understand all context and requirements
+   - Identify the project language and template used
    - Follow all instructions in the PRP and extend the research if needed
    - Ensure you have all needed context to implement the PRP fully
    - Do more web searches and codebase exploration as needed
@@ -27,9 +28,9 @@ Implement a feature using the PRP file.
    - Implement all the code
 
 4. **Validate**
-   - Run each validation command
+   - Run each language-specific validation command from the PRP
    - The better validation that is done, the more confident we can be that the implementation is correct.
-   - Fix any failures
+   - Fix any failures using language-specific patterns
    - Re-run until all pass
    - Always re-read the PRP to validate and review the implementation to ensure it meets the requirements
 

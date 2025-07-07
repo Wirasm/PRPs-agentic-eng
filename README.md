@@ -74,14 +74,14 @@ Precise file paths and content, library versions and library context, code snipp
 2. **Copy the PRP templates and runner**:
 
    ```bash
-   cp -r /path/to/PRPs-agentic-eng/PRPs/templates PRPs/
-   cp -r /path/to/PRPs-agentic-eng/PRPs/scripts PRPs/
-   cp /path/to/PRPs-agentic-eng/PRPs/README.md PRPs/
+   cp -r /path/to/PRPs-agentic-eng/prp/templates prp/
+   cp -r /path/to/PRPs-agentic-eng/prp/scripts prp/
+   cp /path/to/PRPs-agentic-eng/prp/README.md prp/
    ```
 
 3. **Copy AI documentation** (optional but recommended):
    ```bash
-   cp -r /path/to/PRPs-agentic-eng/PRPs/ai_docs PRPs/
+   cp -r /path/to/PRPs-agentic-eng/prp/ai_docs prp/
    ```
 
 ### Option 2: Clone and Start a New Project

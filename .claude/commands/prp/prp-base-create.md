@@ -20,7 +20,7 @@ The AI agent only gets the context you are appending to the PRP and its own trai
 2. **External Research at scale**
    - Create clear todos and spawn with instructions subagents to do deep research for similar features/patterns online and include urls to documentation and examples
    - Library documentation (include specific URLs)
-   - For critical pieces of documentation add a .md file to PRPs/ai_docs and reference it in the PRP with clear reasoning and instructions
+   - For critical pieces of documentation add a .md file to prp/ai_docs and reference it in the PRP with clear reasoning and instructions
    - Implementation examples (GitHub/StackOverflow/blogs)
    - Best practices and common pitfalls found during research
    - Use the batch tools to spawn subagents to search for similar features/patterns online and include urls to documentation and examples
@@ -28,9 +28,22 @@ The AI agent only gets the context you are appending to the PRP and its own trai
 3. **User Clarification**
    - Ask for clarification if you need it
 
+## Language Detection and Template Selection
+
+**Auto-detect project language and select appropriate template:**
+
+Check for language-specific files to determine the technology stack:
+- **Rust**: Look for `Cargo.toml`, `.rs` files → Use `prp/templates/prp_base_rust.md`
+- **Go**: Look for `go.mod`, `.go` files → Use `prp/templates/prp_base_go.md`
+- **Bun**: Look for `bun.lockb` or Bun scripts in `package.json` → Use `prp/templates/prp_base_bun.md`
+- **TypeScript/JavaScript**: Look for `package.json`, `.ts/.js` files → Use `prp/templates/prp_base_typescript.md`
+- **Python**: Look for `pyproject.toml`, `requirements.txt`, `.py` files → Use `prp/templates/prp_base.md`
+
+If multiple languages detected, prioritize by primary project focus or ask for clarification.
+
 ## PRP Generation
 
-Using PRPs/templates/prp_base.md as template:
+Using the detected template from above:
 
 ### Critical Context at minimum to Include and pass to the AI agent as part of the PRP
 
@@ -67,7 +80,7 @@ Include tests, mcp servers, and any other relevant validation gates. Get creativ
 
 ## Output
 
-Save as: `PRPs/{feature-name}.md`
+Save as: `prp/{feature-name}.md`
 
 ## Quality Checklist
 

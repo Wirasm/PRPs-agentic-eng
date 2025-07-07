@@ -10,24 +10,37 @@ This is a **PRP (Product Requirement Prompt) Framework** repository, not a tradi
 
 ### Command-Driven System
 
-- **28+ pre-configured Claude Code commands** in `.claude/commands/`
+- **35+ pre-configured Claude Code commands** in `.claude/commands/`
 - Commands organized by function:
-  - `PRPs/` - PRP creation and execution workflows
-  - `development/` - Core development utilities (prime-core, onboarding, debug)
-  - `code-quality/` - Review and refactoring commands
-  - `rapid-development/experimental/` - Parallel PRP creation and hackathon tools
-  - `git-operations/` - Conflict resolution and smart git operations
+  - `prp/` - PRP creation and execution workflows (language-agnostic)
+  - `dev/` - Core development utilities (prime-core, onboarding, debug)
+  - `quality/` - Review and refactoring commands
+  - `lab/experimental/` - Parallel PRP creation and hackathon tools
+  - `git/` - Conflict resolution and smart git operations
+  - `rust/` - Rust-specific PRP and review commands
+  - `go/` - Go-specific PRP and review commands  
+  - `bun/` - Bun-specific PRP and review commands
+  - `typescript/` - TypeScript-specific commands (legacy)
 
-### Template-Based Methodology
+### Multi-Language Template System
 
-- **PRP Templates** in `PRPs/templates/` follow structured format with validation loops
+- **Language-Specific PRP Templates** in `prp/templates/`:
+  - `prp_base.md` - Python (default)
+  - `prp_base_typescript.md` - TypeScript/JavaScript
+  - `prp_base_rust.md` - Rust with cargo validation
+  - `prp_base_go.md` - Go with go test validation
+  - `prp_base_bun.md` - Bun with native APIs
 - **Context-Rich Approach**: Every PRP must include comprehensive documentation, examples, and gotchas
-- **Validation-First Design**: Each PRP contains executable validation gates (syntax, tests, integration)
+- **Validation-First Design**: Each PRP contains executable validation gates specific to the language
 
 ### AI Documentation Curation
 
-- `PRPs/ai_docs/` contains curated Claude Code documentation for context injection
-- `claude_md_files/` provides framework-specific CLAUDE.md examples
+- `prp/ai_docs/` contains curated Claude Code documentation for context injection
+- `claude_md_files/` provides comprehensive language-specific CLAUDE.md examples:
+  - `CLAUDE-RUST.md` - Rust best practices and patterns
+  - `CLAUDE-GO.md` - Go idioms and conventions
+  - `CLAUDE-BUN.md` - Bun performance and TypeScript patterns
+  - `CLAUDE-NODE.md` - Node.js development guidelines
 
 ## Development Commands
 
@@ -35,22 +48,34 @@ This is a **PRP (Product Requirement Prompt) Framework** repository, not a tradi
 
 ```bash
 # Interactive mode (recommended for development)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --interactive
+uv run prp/scripts/prp_runner.py --prp [prp-name] --interactive
 
 # Headless mode (for CI/CD)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format json
+uv run prp/scripts/prp_runner.py --prp [prp-name] --output-format json
 
 # Streaming JSON (for real-time monitoring)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
+uv run prp/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
 ```
 
 ### Key Claude Commands
 
-- `/prp-base-create` - Generate comprehensive PRPs with research
-- `/prp-base-execute` - Execute PRPs against codebase
+#### Universal Commands (Language-Agnostic)
+- `/prp-base-create` - Generate comprehensive PRPs with automatic language detection
+- `/prp-base-execute` - Execute PRPs against codebase with language-specific validation
 - `/prp-planning-create` - Create planning documents with diagrams
-- `/prime-core` - Prime Claude with project context
+- `/prime-core` - Prime Claude with project context and language detection
 - `/review-staged-unstaged` - Review git changes using PRP methodology
+
+#### Language-Specific Commands
+- `/rust-create-base-prp` - Rust PRP creation with cargo patterns
+- `/rust-execute-base-prp` - Execute Rust PRPs with cargo validation
+- `/rust-review-general` - Rust code review focusing on safety and performance
+- `/go-create-base-prp` - Go PRP creation with go test patterns
+- `/go-execute-base-prp` - Execute Go PRPs with go toolchain validation
+- `/go-review-general` - Go code review focusing on idioms and concurrency
+- `/bun-create-base-prp` - Bun PRP creation with native API patterns
+- `/bun-execute-base-prp` - Execute Bun PRPs with bun test validation
+- `/bun-review-general` - Bun code review focusing on performance and TypeScript
 
 ## Critical Success Patterns
 
