@@ -70,7 +70,7 @@ The PRP can be small and focusing on a single task or large and covering multipl
 
 ## Getting Started
 
-### Option 1: Copy Resources to Your Existing Project
+### Option 1: Copy Resources to Your Existing Project (PRPs/scripts/getting_started_option1.sh)
 
 1. **Copy the Claude commands** to your project:
 
