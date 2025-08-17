@@ -2,7 +2,7 @@ description = "Create a comprehensive PRP that enables one-pass implementation s
 prompt = """
 # Create BASE PRP
 
-## Feature: $ARGUMENTS
+## Feature: {{args}}
 
 ## PRP Creation Mission
 

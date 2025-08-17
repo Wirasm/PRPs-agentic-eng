@@ -2,7 +2,7 @@ description = "Execute a PRP for one-pass implementation success by following it
 prompt = """
 # Execute BASE PRP
 
-## PRP File: $ARGUMENTS
+## PRP File: {{args}}
 
 ## Mission: One-Pass Implementation Success
 
