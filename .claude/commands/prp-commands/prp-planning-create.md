@@ -28,7 +28,7 @@ Transform rough ideas into comprehensive PRDs with rich visual documentation.
 
 ## PRD Generation
 
-Using /PRPs/templates/prp_planning_base.md:
+Using /PRPs/templates/prp_planning.md:
 
 ### Visual Documentation Plan
 ```yaml
