@@ -144,7 +144,7 @@ def run_model(
                             file=sys.stderr,
                         )
                     elif message.get("type") == "result":
-                        print(f"\nFinal result:", file=sys.stderr)
+                        print("\nFinal result:", file=sys.stderr)
                         print(
                             f"  Success: {message.get('subtype') == 'success'}",
                             file=sys.stderr,
@@ -203,7 +203,7 @@ def run_model(
             # Print summary to stderr for user visibility
             if isinstance(json_data, dict):
                 if json_data.get("type") == "result":
-                    print(f"\nSummary:", file=sys.stderr)
+                    print("\nSummary:", file=sys.stderr)
                     print(
                         f"  Success: {not json_data.get('is_error', False)}",
                         file=sys.stderr,

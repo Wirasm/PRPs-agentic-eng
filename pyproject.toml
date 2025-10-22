@@ -1,7 +1,9 @@
 [project]
-name = "dynamo-prp-share"
+name = "PRP-library"
 version = "0.1.0"
 description = "Library of assets and prompts for Ai Engineering"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "rich>=14.2.0",
+]

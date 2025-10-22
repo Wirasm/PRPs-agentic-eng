@@ -12,7 +12,8 @@ This is a **PRP (Product Requirement Prompt) Framework** repository, not a tradi
 
 - **pre-configured Claude Code commands** in `.claude/commands/`
 - Commands organized by function:
-  - `PRPs/` - PRP creation and execution workflows
+  - `prp-core/` - Core PRP workflow (creation and execution)
+  - `prp-commands/` - Legacy PRP workflows (story, base, planning variants)
   - `development/` - Core development utilities (prime-core, onboarding, debug)
   - `code-quality/` - Review and refactoring commands
   - `rapid-development/experimental/` - Parallel PRP creation and hackathon tools
@@ -46,11 +47,21 @@ uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
 
 ### Key Claude Commands
 
+**Core PRP Workflow (Recommended)**:
+- `/prp-core-create` - Create comprehensive feature PRP with deep codebase analysis
+- `/prp-core-execute` - Execute feature PRP with sequential validation
+
+**Legacy PRP Workflows**:
+- `/prp-story-create` - Convert user story/task into tactical PRP
+- `/prp-story-execute` - Execute story PRP
 - `/prp-base-create` - Generate comprehensive PRPs with research
 - `/prp-base-execute` - Execute PRPs against codebase
 - `/prp-planning-create` - Create planning documents with diagrams
+
+**Development Utilities**:
 - `/prime-core` - Prime Claude with project context
 - `/review-staged-unstaged` - Review git changes using PRP methodology
+- `/smart-commit` - Analyze changes and create smart git commit
 
 ## Critical Success Patterns
 
