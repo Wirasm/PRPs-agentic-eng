@@ -1,0 +1,15 @@
+{
+  "name": "prp-marketplace",
+  "owner": {
+    "name": "Wirasm",
+    "email": "contact@wirasm.com"
+  },
+  "description": "PRP (Product Requirement Prompt) workflow automation tools and methodology",
+  "plugins": [
+    {
+      "name": "prp-core",
+      "source": "./plugins/prp-core",
+      "description": "Complete PRP workflow automation - create, execute, commit, and PR commands with orchestration scripts"
+    }
+  ]
+}
