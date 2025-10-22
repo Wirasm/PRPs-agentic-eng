@@ -50,6 +50,8 @@ uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
 **Core PRP Workflow (Recommended)**:
 - `/prp-core-create` - Create comprehensive feature PRP with deep codebase analysis
 - `/prp-core-execute` - Execute feature PRP with sequential validation
+- `/prp-core-commit` - Create atomic git commit with validation
+- `/prp-core-pr` - Push changes and create PR with comprehensive description
 
 **Legacy PRP Workflows**:
 - `/prp-story-create` - Convert user story/task into tactical PRP
