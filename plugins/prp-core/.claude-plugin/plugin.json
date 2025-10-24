@@ -7,7 +7,7 @@
     "email": "hello@rasmuswiding.com"
   },
   "repository": "https://github.com/Wirasm/PRPs-agentic-eng.git",
-  "commands": ["./commands/prp-core"],
+  "commands": ["./commands/"],
   "keywords": [
     "prp",
     "workflow",

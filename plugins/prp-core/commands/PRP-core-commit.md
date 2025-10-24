@@ -2,9 +2,13 @@
 
 Create an atomic git commit with a properly formatted commit message following best practices for the uncommited changes or these specific files if specified.
 
-read the project readme and run lint checks and unit tests
+Specific files (skip if not specified):
 
-If checks and tests pass proceed, if they fail stop and report the failures
+- File 1: $1
+- File 2: $2
+- File 3: $3
+- File 4: $4
+- File 5: $5
 
 ## Instructions
 
