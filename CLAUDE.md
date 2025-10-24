@@ -48,10 +48,15 @@ uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
 ### Key Claude Commands
 
 **Core PRP Workflow (Recommended)**:
+- `/prp-core-run-all` - Run complete PRP workflow from feature to PR (orchestrates all steps below)
+- `/prp-core-new-branch` - Create conventional git branch for feature
 - `/prp-core-create` - Create comprehensive feature PRP with deep codebase analysis
 - `/prp-core-execute` - Execute feature PRP with sequential validation
 - `/prp-core-commit` - Create atomic git commit with validation
 - `/prp-core-pr` - Push changes and create PR with comprehensive description
+
+**Agent Skills**:
+- `prp-core-runner` - Autonomous skill that orchestrates the complete PRP workflow when you request to implement features using PRP methodology
 
 **Legacy PRP Workflows**:
 - `/prp-story-create` - Convert user story/task into tactical PRP
