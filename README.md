@@ -62,7 +62,7 @@ Precise file paths and content, library versions and library context, code snipp
 
 ## Getting Started
 
-### Option 1: Copy Resources to Your Existing Project
+### Option 1: Copy Resources to Your Existing Project (PRPs/scripts/getting_started_option1.sh)
 
 1. **Copy the Claude commands** to your project:
 
