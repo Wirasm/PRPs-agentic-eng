@@ -9,10 +9,6 @@
 - [The Construction Crew Analogy](#the-construction-crew-analogy-)
 - [The Magic: How They Work Together](#the-magic-how-they-work-together-)
 - [The Step-by-Step Process](#the-step-by-step-process-)
-  - [For Building New Features](#for-building-new-features-most-common)
-  - [For Changing Existing Code](#for-changing-existing-code)
-  - [For Small, Focused Tasks](#for-small-focused-tasks)
-  - [For Emergency/Fast Work](#for-emergencyfast-work)
 - [Complete Real Example: Building a "Like Button"](#complete-real-example-building-a-like-button-)
 - [The Quality Control System](#the-quality-control-system-)
 - [When to Use Each Command](#when-to-use-each-command-)
@@ -28,7 +24,7 @@
   - [TypeScript-Specific Commands](#typescript-specific-commands-)
 - [Command Categories Quick Reference](#command-categories-quick-reference-)
 - [Pro Tips for Command Usage](#pro-tips-for-command-usage-)
-- [Remember: You're the Architect, AI is Your Construction Crew](#remember-youre-the-architect-ai-is-your-construction-crew-)
+- [Remember: You're the Architect](#remember-youre-the-architect-ai-is-your-construction-crew-)
 
 ---
 
