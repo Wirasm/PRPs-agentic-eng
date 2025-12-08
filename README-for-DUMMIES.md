@@ -1,6 +1,33 @@
 # PRP Commands for Dummies 🏗️
 *Building Software Like a Master Architect*
 
+---
+
+## Table of Contents
+
+- [What is This Thing?](#what-is-this-thing)
+- [The Construction Crew Analogy](#the-construction-crew-analogy-)
+- [The Magic: How They Work Together](#the-magic-how-they-work-together-)
+- [The Step-by-Step Process](#the-step-by-step-process-)
+- [Complete Real Example: Building a "Like Button"](#complete-real-example-building-a-like-button-)
+- [The Quality Control System](#the-quality-control-system-)
+- [When to Use Each Command](#when-to-use-each-command-)
+- [Common Mistakes (Don't Do These!)](#common-mistakes-dont-do-these-)
+- [Pro Tips for Success](#pro-tips-for-success-)
+- [Quick Reference Card](#quick-reference-card-)
+- [Getting Started Right Now](#getting-started-right-now-)
+- [All Available Commands - The Complete Toolbox](#all-available-commands---the-complete-toolbox-)
+  - [Development Commands](#development-commands-)
+  - [Code Quality Commands](#code-quality-commands-)
+  - [Git Operations Commands](#git-operations-commands-)
+  - [Rapid Development Commands](#rapid-development-commands-)
+  - [TypeScript-Specific Commands](#typescript-specific-commands-)
+- [Command Categories Quick Reference](#command-categories-quick-reference-)
+- [Pro Tips for Command Usage](#pro-tips-for-command-usage-)
+- [Remember: You're the Architect](#remember-youre-the-architect-ai-is-your-construction-crew-)
+
+---
+
 ## What is This Thing?
 
 Imagine you want to build a house. You wouldn't just grab a hammer and start hitting wood, right? You'd hire an architect to draw plans, a structural engineer to figure out the foundation, and skilled builders to follow the blueprints.
