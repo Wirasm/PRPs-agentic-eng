@@ -1,13 +1,13 @@
 claude
-\*\* Create a comprehensive task list in PRPs/checklist.md for PRP $ARGIMENTS
+\*\* Create a comprehensive task list in PRPs/checklist.md for PRP $ARGUMENTS
 
-Ingest the infomration then dig deep into our existing codebase and PRP, When done ->
+Ingest the information then dig deep into our existing codebase and PRP, When done ->
 
-ULTRATHINK about the PRP task and create the plan based adhering to claude.md and extract and refine detailed tasks following this principle:
+ULTRATHINK about the PRP task and create the plan base adhering to claude.md and extract and refine detailed tasks following this principle:
 
-### list of tasks to be completed to fullfill the PRP in the order they should be completed using infomration dense keywords
+### list of tasks to be completed to fullfill the PRP in the order they should be completed using information dense keywords
 
-- Infomration dense keyword examples:
+- Information dense keyword examples:
   ADD, CREATE, MODIFY, MIRROR, FIND, EXECUTE, KEEP, PRESERVE etc
 
 Mark done tasks with: STATUS [DONE], if not done leave empty
