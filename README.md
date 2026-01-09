@@ -100,6 +100,74 @@ The `.claude/commands/prp-core/` directory contains the core PRP workflow comman
 | `/prp-pr`     | Create PR with template support                   |
 | `/prp-review` | Comprehensive PR code review                      |
 
+### Autonomous Loop
+
+| Command             | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `/prp-ralph`        | Start autonomous loop until all validations pass |
+| `/prp-ralph-cancel` | Cancel active Ralph loop                         |
+
+---
+
+## Ralph Loop (Autonomous Execution)
+
+Based on [Geoffrey Huntley's Ralph Wiggum technique](https://ghuntley.com/ralph/) - a self-referential loop that keeps iterating until the job is actually done.
+
+### How It Works
+
+```
+/prp-ralph .claude/PRPs/plans/my-feature.plan.md --max-iterations 20
+```
+
+1. Claude implements the plan tasks
+2. Runs all validation commands (type-check, lint, tests, build)
+3. If any validation fails → fixes and re-validates
+4. Loop continues until ALL validations pass
+5. Outputs `<promise>COMPLETE</promise>` and exits
+
+Each iteration, Claude sees its previous work in files and git history. It's not starting fresh - it's debugging itself.
+
+### Setup
+
+The stop hook must be configured in `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/prp-ralph-stop.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Usage
+
+```bash
+# Create a plan
+/prp-plan "add user authentication with JWT"
+
+# Let Ralph loose
+/prp-ralph .claude/PRPs/plans/add-user-auth.plan.md --max-iterations 20
+
+# Cancel if needed
+/prp-ralph-cancel
+```
+
+### Tips
+
+- Always use `--max-iterations` (default: 20) to prevent infinite loops
+- Works best with plans that have clear, testable validation commands
+- State is tracked in `.claude/prp-ralph.state.md`
+- Progress and learnings are captured in the implementation report
+
 ---
 
 ## Workflow Overview
