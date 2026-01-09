@@ -31,7 +31,7 @@ I spent a considerable amount of time creating these resources and prompts. If y
 
 **Perfect for:** Engineering teams, Product teams, and developers who want AI that actually works in production
 
-Contact me directly at rasmus@widinglabs.com
+Contact me directly at hello@rasmuswiding.com
 
 ---
 
@@ -45,7 +45,7 @@ A PRP supplies an AI coding agent with everything it needs to deliver a vertical
 
 ### How PRP Differs from Traditional PRD
 
-A traditional PRD clarifies *what* the product must do and *why* customers need it, but deliberately avoids *how* it will be built.
+A traditional PRD clarifies _what_ the product must do and _why_ customers need it, but deliberately avoids _how_ it will be built.
 
 A PRP keeps the goal and justification sections of a PRD yet adds AI-critical layers:
 
@@ -79,26 +79,26 @@ The `.claude/commands/prp-core/` directory contains the core PRP workflow comman
 
 ### Core Workflow
 
-| Command | Description |
-|---------|-------------|
-| `/prp-prd` | Interactive PRD generator with implementation phases |
-| `/prp-plan` | Create implementation plan (from PRD or free-form input) |
-| `/prp-implement` | Execute a plan with validation loops |
+| Command          | Description                                              |
+| ---------------- | -------------------------------------------------------- |
+| `/prp-prd`       | Interactive PRD generator with implementation phases     |
+| `/prp-plan`      | Create implementation plan (from PRD or free-form input) |
+| `/prp-implement` | Execute a plan with validation loops                     |
 
 ### Issue Workflow
 
-| Command | Description |
-|---------|-------------|
+| Command                  | Description                                      |
+| ------------------------ | ------------------------------------------------ |
 | `/prp-issue-investigate` | Analyze GitHub issue, create implementation plan |
-| `/prp-issue-fix` | Execute fix from investigation artifact |
+| `/prp-issue-fix`         | Execute fix from investigation artifact          |
 
 ### Git & Review
 
-| Command | Description |
-|---------|-------------|
+| Command       | Description                                       |
+| ------------- | ------------------------------------------------- |
 | `/prp-commit` | Smart commit with natural language file targeting |
-| `/prp-pr` | Create PR with template support |
-| `/prp-review` | Comprehensive PR code review |
+| `/prp-pr`     | Create PR with template support                   |
+| `/prp-review` | Comprehensive PR code review                      |
 
 ---
 
@@ -168,12 +168,12 @@ All artifacts are stored in `.claude/PRPs/`:
 PRDs include an Implementation Phases table for tracking progress:
 
 ```markdown
-| # | Phase | Description | Status | Parallel | Depends | PRP Plan |
-|---|-------|-------------|--------|----------|---------|----------|
-| 1 | Auth  | User login  | complete | -      | -       | [link]   |
-| 2 | API   | Endpoints   | in-progress | -   | 1       | [link]   |
-| 3 | UI    | Frontend    | pending | with 4  | 2       | -        |
-| 4 | Tests | Test suite  | pending | with 3  | 2       | -        |
+| #   | Phase | Description | Status      | Parallel | Depends | PRP Plan |
+| --- | ----- | ----------- | ----------- | -------- | ------- | -------- |
+| 1   | Auth  | User login  | complete    | -        | -       | [link]   |
+| 2   | API   | Endpoints   | in-progress | -        | 1       | [link]   |
+| 3   | UI    | Frontend    | pending     | with 4   | 2       | -        |
+| 4   | Tests | Test suite  | pending     | with 3   | 2       | -        |
 ```
 
 - **Status**: `pending` → `in-progress` → `complete`
