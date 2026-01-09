@@ -85,12 +85,13 @@ The `.claude/commands/prp-core/` directory contains the core PRP workflow comman
 | `/prp-plan`      | Create implementation plan (from PRD or free-form input) |
 | `/prp-implement` | Execute a plan with validation loops                     |
 
-### Issue Workflow
+### Issue & Debug Workflow
 
 | Command                  | Description                                      |
 | ------------------------ | ------------------------------------------------ |
 | `/prp-issue-investigate` | Analyze GitHub issue, create implementation plan |
 | `/prp-issue-fix`         | Execute fix from investigation artifact          |
+| `/prp-debug`             | Deep root cause analysis with 5 Whys methodology |
 
 ### Git & Review
 

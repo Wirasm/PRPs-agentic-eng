@@ -19,12 +19,13 @@ You give the AI a detailed plan with context and validation commands. The AI imp
 | `/prp-implement` | Execute a plan with validation loops            |
 | `/prp-ralph`     | Autonomous loop until all validations pass      |
 
-### Issue Workflow
+### Issue & Debug Workflow
 
 | Command                  | What it does                          |
 | ------------------------ | ------------------------------------- |
 | `/prp-issue-investigate` | Analyze a GitHub issue, create a plan |
 | `/prp-issue-fix`         | Implement the fix                     |
+| `/prp-debug`             | Deep root cause analysis (5 Whys)     |
 
 ### Git & Review
 
@@ -66,12 +67,20 @@ Skip the PRD. Go straight to a plan:
 /prp-implement .claude/PRPs/plans/add-pagination.plan.md
 ```
 
-### For Bug Fixes
+### For Bug Fixes (GitHub Issues)
 
 ```
 /prp-issue-investigate 123
     ↓
 /prp-issue-fix 123
+```
+
+### For Debugging (Errors, Stack Traces)
+
+```
+/prp-debug "TypeError: Cannot read property 'x' of undefined"
+    ↓
+Creates RCA report with root cause and fix specification
 ```
 
 ---
@@ -185,7 +194,8 @@ Previous commands like `/prp-base-create`, `/prp-spec-create`, `/api-contract-de
 
 1. Big feature? → `/prp-prd` → `/prp-plan` → `/prp-ralph`
 2. Medium feature? → `/prp-plan` → `/prp-implement`
-3. Bug fix? → `/prp-issue-investigate` → `/prp-issue-fix`
-4. Done? → `/prp-commit` → `/prp-pr`
+3. GitHub issue? → `/prp-issue-investigate` → `/prp-issue-fix`
+4. Weird bug? → `/prp-debug "error message"`
+5. Done? → `/prp-commit` → `/prp-pr`
 
 Happy building.
