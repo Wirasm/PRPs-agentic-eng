@@ -14,10 +14,21 @@ Transform "$ARGUMENTS" into a battle-tested implementation plan through systemat
 </objective>
 
 <context>
-Project structure: !`ls -la src/`
-Package info: !`cat package.json | head -30`
-Existing features: !`ls src/features/ 2>/dev/null || echo "No features directory"`
 CLAUDE.md rules: @CLAUDE.md
+
+**Directory Discovery** (run these to understand project structure):
+- List root contents: `ls -la`
+- Find main source directories: `ls -la */ 2>/dev/null | head -50`
+- Identify project type from config files (package.json, pyproject.toml, Cargo.toml, go.mod, etc.)
+
+**IMPORTANT**: Do NOT assume `src/` exists. Common alternatives include:
+- `app/` (Next.js, Rails, Laravel)
+- `lib/` (Ruby gems, Elixir)
+- `packages/` (monorepos)
+- `cmd/`, `internal/`, `pkg/` (Go)
+- Root-level source files (Python, scripts)
+
+Discover the actual structure before proceeding.
 </context>
 
 <process>
@@ -480,23 +491,23 @@ Execute in order. Each task is atomic and independently verifiable.
 - **MIRROR**: `src/features/projects/service.ts:1-80`
 - **PATTERN**: Use repository, add logging, throw custom errors
 - **IMPORTS**: `import { getLogger } from "@/core/logging"`
-- **VALIDATE**: `npx tsc --noEmit && bun run lint`
+- **VALIDATE**: `{type-check-cmd} && {lint-cmd}`
 
-### Task 7: CREATE `src/features/new/index.ts`
+### Task 7: CREATE `{source-dir}/features/new/index.ts`
 
 - **ACTION**: CREATE public API exports
 - **IMPLEMENT**: Export types, schemas, errors, service functions
-- **MIRROR**: `src/features/projects/index.ts:1-20`
+- **MIRROR**: `{source-dir}/features/{example}/index.ts:1-20`
 - **PATTERN**: Named exports only, hide repository (internal)
-- **VALIDATE**: `npx tsc --noEmit`
+- **VALIDATE**: `{type-check-cmd}`
 
-### Task 8: CREATE `src/features/new/tests/service.test.ts`
+### Task 8: CREATE `{source-dir}/features/new/tests/service.test.ts`
 
 - **ACTION**: CREATE unit tests for service
 - **IMPLEMENT**: Test each service function, happy path + error cases
-- **MIRROR**: `src/features/projects/tests/service.test.ts:1-100`
-- **PATTERN**: Use describe/it from bun:test, mock repository
-- **VALIDATE**: `bun test src/features/new/tests/`
+- **MIRROR**: `{source-dir}/features/{example}/tests/service.test.ts:1-100`
+- **PATTERN**: Use project's test framework (jest, vitest, bun:test, pytest, etc.)
+- **VALIDATE**: `{test-cmd} {path-to-tests}`
 
 ---
 
@@ -523,10 +534,13 @@ Execute in order. Each task is atomic and independently verifiable.
 
 ## Validation Commands
 
+**IMPORTANT**: Replace these placeholders with actual commands from the project's package.json/config.
+
 ### Level 1: STATIC_ANALYSIS
 
 ```bash
-bun run lint && npx tsc --noEmit
+{runner} run lint && {runner} run type-check
+# Examples: npm run lint, pnpm lint, ruff check . && mypy ., cargo clippy
 ```
 
 **EXPECT**: Exit 0, no errors or warnings
@@ -534,7 +548,8 @@ bun run lint && npx tsc --noEmit
 ### Level 2: UNIT_TESTS
 
 ```bash
-bun test src/features/{feature}/tests/
+{runner} test {path/to/feature/tests}
+# Examples: npm test, pytest tests/, cargo test, go test ./...
 ```
 
 **EXPECT**: All tests pass, coverage >= 80%
@@ -542,10 +557,11 @@ bun test src/features/{feature}/tests/
 ### Level 3: FULL_SUITE
 
 ```bash
-bun test && bun run build
+{runner} test && {runner} run build
+# Examples: npm test && npm run build, cargo test && cargo build
 ```
 
-**EXPECT**: All tests pass, build succeeds, dist/ created
+**EXPECT**: All tests pass, build succeeds
 
 ### Level 4: DATABASE_VALIDATION (if schema changes)
 
@@ -584,9 +600,9 @@ Use Browser MCP to verify:
 
 - [ ] All tasks completed in dependency order
 - [ ] Each task validated immediately after completion
-- [ ] Level 1: `bun run lint && npx tsc --noEmit` passes
-- [ ] Level 2: `bun test {pattern}` passes
-- [ ] Level 3: `bun test && bun run build` succeeds
+- [ ] Level 1: Static analysis (lint + type-check) passes
+- [ ] Level 2: Unit tests pass
+- [ ] Level 3: Full test suite + build succeeds
 - [ ] Level 4: Database validation passes (if applicable)
 - [ ] Level 5: Browser validation passes (if applicable)
 - [ ] All acceptance criteria met

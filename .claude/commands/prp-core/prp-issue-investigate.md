@@ -383,9 +383,10 @@ describe("{feature}", () => {
 ### Automated Checks
 
 ```bash
-bun run type-check
-bun test {relevant-pattern}
-bun run lint
+# Adapt to project's toolchain (npm, pnpm, yarn, cargo, go, etc.)
+{runner} run type-check   # or: mypy ., cargo check, go build ./...
+{runner} test {relevant-pattern}  # or: pytest, cargo test, go test
+{runner} run lint         # or: ruff check ., cargo clippy
 ```
 
 ### Manual Verification
@@ -496,7 +497,8 @@ gh issue comment {number} --body "$(cat <<'EOF'
 ### Validation
 
 ```bash
-bun run type-check && bun test {pattern} && bun run lint
+# Run project's validation commands (adapt to toolchain)
+{type-check-cmd} && {test-cmd} {pattern} && {lint-cmd}
 ````
 
 ---

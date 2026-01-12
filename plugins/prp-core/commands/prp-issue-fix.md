@@ -188,7 +188,7 @@ For each step in the artifact's Implementation Plan:
 
 1. **Read the target file** - understand current state
 2. **Make the change** - exactly as specified
-3. **Verify types compile** - `bun run type-check`
+3. **Verify types compile** - run the project's type-check command
 
 ### 4.2 Implementation Rules
 
@@ -247,12 +247,18 @@ If you must deviate from the artifact:
 
 ### 5.1 Run Artifact Validation Commands
 
-Execute each command from the artifact's Validation section:
+Execute each command from the artifact's Validation section.
 
+Common patterns (adapt to project's toolchain):
 ```bash
-bun run type-check
-bun test {pattern-from-artifact}
-bun run lint
+# Type check
+{runner} run type-check  # or: mypy ., cargo check, go build ./...
+
+# Tests
+{runner} test {pattern-from-artifact}  # or: pytest, cargo test, go test
+
+# Lint
+{runner} run lint  # or: ruff check ., cargo clippy
 ```
 
 ### 5.2 Check Results
@@ -372,7 +378,8 @@ gh pr create --title "Fix: {title} (#{number})" --body "$(cat <<'EOF'
 ## Validation
 
 ```bash
-bun run type-check && bun test {pattern} && bun run lint
+# Run project's validation commands (adapt to toolchain)
+{type-check-cmd} && {test-cmd} {pattern} && {lint-cmd}
 ````
 
 ## Issue

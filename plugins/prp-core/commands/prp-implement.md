@@ -19,6 +19,36 @@ Execute the plan end-to-end with rigorous self-validation. You are autonomous.
 
 ---
 
+## Phase 0: DETECT - Project Environment
+
+### 0.1 Identify Package Manager
+
+Check for these files to determine the project's toolchain:
+
+| File Found | Package Manager | Runner |
+|------------|-----------------|--------|
+| `bun.lockb` | bun | `bun` / `bun run` |
+| `pnpm-lock.yaml` | pnpm | `pnpm` / `pnpm run` |
+| `yarn.lock` | yarn | `yarn` / `yarn run` |
+| `package-lock.json` | npm | `npm run` |
+| `pyproject.toml` | uv/pip | `uv run` / `python` |
+| `Cargo.toml` | cargo | `cargo` |
+| `go.mod` | go | `go` |
+
+**Store the detected runner** - use it for all subsequent commands.
+
+### 0.2 Identify Validation Scripts
+
+Check `package.json` (or equivalent) for available scripts:
+- Type checking: `type-check`, `typecheck`, `tsc`
+- Linting: `lint`, `lint:fix`
+- Testing: `test`, `test:unit`, `test:integration`
+- Building: `build`, `compile`
+
+**Use the plan's "Validation Commands" section** - it should specify exact commands for this project.
+
+---
+
 ## Phase 1: LOAD - Read the Plan
 
 ### 1.1 Load Plan File
@@ -35,7 +65,7 @@ Locate and understand:
 - **Patterns to Mirror** - Code to copy from
 - **Files to Change** - CREATE/UPDATE list
 - **Step-by-Step Tasks** - Implementation order
-- **Validation Commands** - How to verify
+- **Validation Commands** - How to verify (USE THESE, not hardcoded commands)
 - **Acceptance Criteria** - Definition of done
 
 ### 1.3 Validate Plan Exists
@@ -108,11 +138,13 @@ git pull --rebase origin main 2>/dev/null || true
 
 ### 3.3 Validate Immediately
 
-**After EVERY file change, run:**
+**After EVERY file change, run the type-check command from the plan's Validation Commands section.**
 
-```bash
-bun run type-check
-```
+Common patterns:
+- `{runner} run type-check` (JS/TS projects)
+- `mypy .` (Python)
+- `cargo check` (Rust)
+- `go build ./...` (Go)
 
 **If types fail:**
 
@@ -150,15 +182,19 @@ If you must deviate from the plan:
 
 ### 4.1 Static Analysis
 
-```bash
-bun run type-check && bun run lint
-```
+**Run the type-check and lint commands from the plan's Validation Commands section.**
+
+Common patterns:
+- JS/TS: `{runner} run type-check && {runner} run lint`
+- Python: `ruff check . && mypy .`
+- Rust: `cargo check && cargo clippy`
+- Go: `go vet ./...`
 
 **Must pass with zero errors.**
 
 If lint errors:
 
-1. Run `bun run lint:fix`
+1. Run the lint fix command (e.g., `{runner} run lint:fix`, `ruff check --fix .`)
 2. Re-check
 3. Manual fix remaining issues
 
@@ -172,11 +208,13 @@ If lint errors:
 2. Edge cases identified in the plan need tests
 3. Update existing tests if behavior changed
 
-**Write tests**, then run:
+**Write tests**, then run the test command from the plan.
 
-```bash
-bun test
-```
+Common patterns:
+- JS/TS: `{runner} test` or `{runner} run test`
+- Python: `pytest` or `uv run pytest`
+- Rust: `cargo test`
+- Go: `go test ./...`
 
 **If tests fail:**
 
@@ -188,28 +226,29 @@ bun test
 
 ### 4.3 Build Check
 
-```bash
-bun run build
-```
+**Run the build command from the plan's Validation Commands section.**
+
+Common patterns:
+- JS/TS: `{runner} run build`
+- Python: N/A (interpreted) or `uv build`
+- Rust: `cargo build --release`
+- Go: `go build ./...`
 
 **Must complete without errors.**
 
 ### 4.4 Integration Testing (if applicable)
 
-**If the plan involves API/server changes:**
+**If the plan involves API/server changes, use the integration test commands from the plan.**
 
+Example pattern:
 ```bash
-# Start server in background
-bun run dev &
+# Start server in background (command varies by project)
+{runner} run dev &
 SERVER_PID=$!
 sleep 3
 
-# Test endpoints
-curl -s http://localhost:3000/health | jq
-curl -s http://localhost:3000/test/message \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"conversationId":"test","message":"/status"}'
+# Test endpoints (adjust URL/port per project config)
+curl -s http://localhost:{port}/health | jq
 
 # Stop server
 kill $SERVER_PID
@@ -221,10 +260,10 @@ Run any edge case tests specified in the plan.
 
 **PHASE_4_CHECKPOINT:**
 
-- [ ] `bun run type-check` passes
-- [ ] `bun run lint` passes (0 errors)
-- [ ] `bun test` passes (all green)
-- [ ] `bun run build` succeeds
+- [ ] Type-check passes (command from plan)
+- [ ] Lint passes (0 errors)
+- [ ] Tests pass (all green)
+- [ ] Build succeeds
 - [ ] Integration tests pass (if applicable)
 
 ---
@@ -425,7 +464,7 @@ To continue: `/prp-plan {prd-path}`
 
 1. Read error message carefully
 2. Fix the type issue
-3. Re-run `bun run type-check`
+3. Re-run the type-check command
 4. Don't proceed until passing
 
 ### Tests Fail
@@ -438,7 +477,7 @@ To continue: `/prp-plan {prd-path}`
 
 ### Lint Fails
 
-1. Run `bun run lint:fix` for auto-fixable issues
+1. Run the lint fix command for auto-fixable issues
 2. Manually fix remaining issues
 3. Re-run lint
 4. Proceed when clean
@@ -461,9 +500,9 @@ To continue: `/prp-plan {prd-path}`
 ## Success Criteria
 
 - **TASKS_COMPLETE**: All plan tasks executed
-- **TYPES_PASS**: `bun run type-check` exits 0
-- **LINT_PASS**: `bun run lint` exits 0 (warnings OK)
-- **TESTS_PASS**: `bun test` all green
-- **BUILD_PASS**: `bun run build` succeeds
+- **TYPES_PASS**: Type-check command exits 0
+- **LINT_PASS**: Lint command exits 0 (warnings OK)
+- **TESTS_PASS**: Test command all green
+- **BUILD_PASS**: Build command succeeds
 - **REPORT_CREATED**: Implementation report exists
 - **PLAN_ARCHIVED**: Original plan moved to completed
