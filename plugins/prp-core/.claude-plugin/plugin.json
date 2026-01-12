@@ -1,13 +1,15 @@
 {
   "name": "prp-core",
-  "version": "1.0.0",
-  "description": "Complete PRP (Product Requirement Prompt) workflow automation - create, execute, commit, and PR commands with orchestration scripts",
+  "version": "2.0.0",
+  "description": "Complete PRP (Product Requirement Prompt) workflow automation - plan, implement, debug, review, commit, and PR commands with Ralph autonomous loop",
   "author": {
     "name": "Wirasm",
     "email": "hello@rasmuswiding.com"
   },
   "repository": "https://github.com/Wirasm/PRPs-agentic-eng.git",
-  "commands": ["./commands/"],
+  "commands": "./commands/",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "keywords": [
     "prp",
     "workflow",
@@ -15,6 +17,8 @@
     "product-requirements",
     "implementation",
     "git",
-    "ci-cd"
+    "ci-cd",
+    "ralph",
+    "autonomous"
   ]
 }

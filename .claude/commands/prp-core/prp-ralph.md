@@ -15,6 +15,8 @@ Start an autonomous Ralph loop that executes a PRP plan iteratively until all va
 
 **Core Philosophy**: Self-referential feedback loop. Each iteration, you see your previous work in files and git history. You implement, validate, fix, repeat - until complete.
 
+**Skill Reference**: The `prp-ralph-loop` skill provides detailed execution guidance. It will be automatically available during loop iterations.
+
 ---
 
 ## Phase 1: PARSE - Validate Input
@@ -78,13 +80,13 @@ Create `.claude/prp-ralph.state.md`:
 
 ```bash
 mkdir -p .claude
+mkdir -p .claude/PRPs/ralph-archives
 ```
 
 Write state file with this structure:
 
 ```markdown
 ---
-active: true
 iteration: 1
 max_iterations: {N}
 plan_path: "{file_path}"
@@ -93,6 +95,9 @@ started_at: "{ISO timestamp}"
 ---
 
 # PRP Ralph Loop State
+
+## Codebase Patterns
+(Consolidate reusable patterns here - future iterations read this first)
 
 ## Current Task
 Execute PRP plan and iterate until all validations pass.
@@ -110,6 +115,8 @@ Execute PRP plan and iterate until all validations pass.
 
 ## Progress Log
 (Append learnings after each iteration)
+
+---
 ```
 
 ### 2.2 Display Startup Message
@@ -144,15 +151,20 @@ Starting iteration 1...
 
 **PHASE_2_CHECKPOINT:**
 - [ ] State file created
+- [ ] Archive directory exists
 - [ ] Startup message displayed
 
 ---
 
 ## Phase 3: EXECUTE - Work on Plan
 
-### 3.1 Read the Plan
+### 3.1 Read Context First
 
-Read the plan file referenced in state.
+Before implementing anything:
+1. Read the state file - check "Codebase Patterns" section
+2. Read the plan file - understand all tasks
+3. Check git status - what's already changed?
+4. Review progress log - what did previous iterations do?
 
 ### 3.2 Identify Work
 
@@ -204,23 +216,56 @@ After each significant change:
 - Add notes about what was done
 - Document any deviations
 
-### 3.8 Update State File
+### 3.8 Update State File Progress Log
 
-Append to Progress Log section:
+Append to Progress Log section using this format:
 
 ```markdown
-### Iteration {N} - {timestamp}
-- Completed: {task summaries}
-- Validation: {results}
-- Issues fixed: {list}
-- Learnings: {patterns discovered, gotchas encountered}
+## Iteration {N} - {ISO timestamp}
+
+### Completed
+- {Task 1 summary}
+- {Task 2 summary}
+
+### Validation Status
+- Type-check: PASS/FAIL ({error count if failing})
+- Lint: PASS/FAIL
+- Tests: PASS/FAIL ({X/Y passing})
+- Build: PASS/FAIL
+
+### Learnings
+- {Pattern discovered: "this codebase uses X for Y"}
+- {Gotcha found: "don't forget to Z when doing W"}
+- {Context: "the component X is in directory Y"}
+
+### Next Steps
+- {What still needs to be done}
+- {Specific blockers to address}
+
+---
 ```
 
+### 3.9 Consolidate Codebase Patterns
+
+If you discover a **reusable pattern**, add it to the "Codebase Patterns" section at the TOP of the state file:
+
+```markdown
+## Codebase Patterns
+- Use `sql<number>` template for type-safe SQL aggregations
+- Always use `IF NOT EXISTS` in migrations
+- Export types from actions.ts for UI components
+- Form validation uses zod schemas in /lib/validations
+```
+
+Only add patterns that are **general and reusable**, not iteration-specific.
+
 **PHASE_3_CHECKPOINT:**
+- [ ] Context read (patterns, previous progress)
 - [ ] All tasks attempted
 - [ ] All validations run
 - [ ] Plan file updated
-- [ ] State file updated
+- [ ] State file progress log updated
+- [ ] Patterns consolidated if discovered
 
 ---
 
@@ -263,6 +308,9 @@ ALL of these must be true:
    | Tests | PASS |
    | Build | PASS |
 
+   ## Codebase Patterns Discovered
+   {From state file Codebase Patterns section}
+
    ## Learnings
    {Consolidated from state file progress log}
 
@@ -270,20 +318,54 @@ ALL of these must be true:
    {Any changes made}
    ```
 
-2. **Archive Plan**
+2. **Archive the Ralph Run**
+
+   ```bash
+   # Create archive directory
+   DATE=$(date +%Y-%m-%d)
+   PLAN_NAME=$(basename {plan_path} .plan.md)
+   ARCHIVE_DIR=".claude/PRPs/ralph-archives/${DATE}-${PLAN_NAME}"
+   mkdir -p "$ARCHIVE_DIR"
+
+   # Copy state file (with all learnings)
+   cp .claude/prp-ralph.state.md "$ARCHIVE_DIR/state.md"
+
+   # Copy the plan
+   cp {plan_path} "$ARCHIVE_DIR/plan.md"
+
+   # Extract consolidated learnings
+   # (The report serves as learnings.md)
+   cp .claude/PRPs/reports/{plan-name}-report.md "$ARCHIVE_DIR/learnings.md"
+   ```
+
+3. **Update CLAUDE.md with Permanent Patterns (if applicable)**
+
+   If any patterns from "Codebase Patterns" section are significant enough to be permanent project knowledge:
+
+   - Read the project's CLAUDE.md
+   - Add new patterns to appropriate section
+   - Avoid duplicating existing patterns
+
+   Example addition:
+   ```markdown
+   ## Patterns Discovered via Ralph
+   - {Pattern that should be permanent}
+   ```
+
+4. **Archive Plan to Completed**
 
    ```bash
    mkdir -p .claude/PRPs/plans/completed
    mv {plan_path} .claude/PRPs/plans/completed/
    ```
 
-3. **Clean Up State**
+5. **Clean Up State**
 
    ```bash
    rm .claude/prp-ralph.state.md
    ```
 
-4. **Output Completion Promise**
+6. **Output Completion Promise**
 
    ```
    <promise>COMPLETE</promise>
@@ -307,22 +389,55 @@ If validations are not all passing:
 If iteration count reaches max_iterations:
 - Document what's incomplete
 - Document what's blocking
+- Archive current state (even if incomplete)
 - Suggest next steps
 - Loop will exit automatically (stop hook handles this)
 
 ### Stuck on Same Issue
 
-If you notice you're stuck:
-- Document the blocker clearly in progress log
-- Try alternative approaches
-- If truly stuck, document for human review
+If you notice you're stuck (same error multiple iterations):
+1. Document the blocker clearly in progress log
+2. Check "Codebase Patterns" - maybe there's a hint
+3. Try alternative approaches
+4. If truly stuck, document for human review
 
 ### Plan Has Errors
 
 If the plan itself has issues:
-- Document the problems
+- Document the problems in progress log
 - Suggest corrections
 - Continue with what's executable
+
+---
+
+## Learnings Feedback System
+
+The Ralph loop captures learnings that can improve the system:
+
+### During Loop
+- **Codebase Patterns**: Added to state file, read by future iterations
+- **Progress Log**: Detailed notes on what worked/failed
+
+### After Completion
+- **Archive**: Full state preserved in `.claude/PRPs/ralph-archives/`
+- **Report**: Consolidated learnings in report file
+- **CLAUDE.md Updates**: Permanent patterns added to project config
+
+### Using Archives for Improvement
+
+Archives can be used to:
+1. Train better PRP plan generation
+2. Identify common failure patterns
+3. Improve validation command suggestions
+4. Update skill documentation with real examples
+
+```bash
+# List all Ralph archives
+ls -la .claude/PRPs/ralph-archives/
+
+# Review learnings from a specific run
+cat .claude/PRPs/ralph-archives/2024-01-12-feature-name/learnings.md
+```
 
 ---
 
@@ -332,4 +447,6 @@ If the plan itself has issues:
 - **VALIDATIONS_PASS**: All validation commands succeed
 - **REPORT_GENERATED**: Implementation report created
 - **LEARNINGS_CAPTURED**: Progress log has useful insights
+- **PATTERNS_CONSOLIDATED**: Reusable patterns extracted
+- **ARCHIVE_CREATED**: Full run archived for future reference
 - **CLEAN_EXIT**: Completion promise output only when genuinely complete
