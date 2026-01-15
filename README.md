@@ -1,6 +1,63 @@
-# PRP (Product Requirement Prompts)
+# PRP Extended (Product Requirement Prompts + Memory System)
 
-A collection of prompts for AI-assisted development with Claude Code.
+> **Fork of [Wirasm/PRPs-agentic-eng](https://github.com/Wirasm/PRPs-agentic-eng) with integrated failure prevention memory system**
+
+A collection of prompts for AI-assisted development with Claude Code, extended with a persistent memory system that learns from failures and successes across sessions.
+
+## What's New in This Fork
+
+This fork adds a **Memory System** inspired by [claude-harness](https://github.com/panayiotism/claude-harness) that enables:
+
+- **Failure Prevention**: Before implementing, Ralph checks if similar approaches have failed before
+- **Success Patterns**: Successful approaches are recorded and suggested for similar problems
+- **Learned Rules**: User corrections are captured as reusable rules
+
+See [Memory System](#memory-system) section for details.
+
+---
+
+## Installation
+
+### Option 1: Use This Fork (with Memory System)
+
+```bash
+# Clone this fork
+git clone https://github.com/Milofax/PRPs-agentic-eng.git
+cd PRPs-agentic-eng
+
+# Copy to your project
+cp -r .claude/commands/prp-core /path/to/your-project/.claude/commands/
+cp -r .claude/prp-memory /path/to/your-project/.claude/
+```
+
+### Option 2: Add to Existing Project
+
+```bash
+# From your project root
+mkdir -p .claude/commands .claude/prp-memory/procedural .claude/prp-memory/learned
+
+# Clone and copy
+git clone https://github.com/Milofax/PRPs-agentic-eng.git /tmp/prp-extended
+cp -r /tmp/prp-extended/.claude/commands/prp-core .claude/commands/
+cp -r /tmp/prp-extended/.claude/prp-memory/* .claude/prp-memory/
+
+# Clean up
+rm -rf /tmp/prp-extended
+```
+
+### Option 3: Git Submodule
+
+```bash
+# Add as submodule
+git submodule add https://github.com/Milofax/PRPs-agentic-eng.git .prp
+
+# Symlink commands
+ln -s .prp/.claude/commands/prp-core .claude/commands/prp-core
+mkdir -p .claude/prp-memory
+cp -r .prp/.claude/prp-memory/* .claude/prp-memory/
+```
+
+---
 
 ## Video Walkthrough
 
@@ -171,6 +228,123 @@ The stop hook must be configured in `.claude/settings.local.json`:
 
 ---
 
+## Memory System
+
+The memory system prevents repeated failures and captures successful patterns across sessions.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Ralph Loop Start                         │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 3.0: Failure Prevention Check                        │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 1. Read failures.json                                │   │
+│  │ 2. Check for similar approaches/files/errors         │   │
+│  │ 3. WARN if match found                               │   │
+│  │ 4. Check successes.json for alternatives             │   │
+│  │ 5. Apply learned rules from rules.json               │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Implementation & Validation                                 │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 3.10: Record to Memory                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ If FAILED:  → Append to failures.json               │   │
+│  │ If SUCCESS: → Append to successes.json              │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Memory Structure
+
+```
+.claude/prp-memory/
+├── procedural/
+│   ├── failures.json      # Failed approaches with root cause analysis
+│   └── successes.json     # Successful patterns for reuse
+└── learned/
+    └── rules.json         # User corrections captured as rules
+```
+
+### Failure Entry Example
+
+```json
+{
+  "id": "fail-001",
+  "timestamp": "2026-01-15T10:30:00Z",
+  "plan": ".claude/PRPs/plans/feature-xyz.plan.md",
+  "iteration": 3,
+  "approach": "Direct localStorage access for session tokens",
+  "files": ["src/components/Auth.tsx", "src/lib/session.ts"],
+  "errors": ["TypeError: Cannot read property 'user' of undefined"],
+  "rootCause": "Session state not initialized before auth check",
+  "prevention": "Always verify session state before calling auth functions"
+}
+```
+
+### Success Entry Example
+
+```json
+{
+  "id": "success-001",
+  "timestamp": "2026-01-15T11:45:00Z",
+  "plan": ".claude/PRPs/plans/feature-xyz.plan.md",
+  "approach": "React hooks with useEffect for session initialization",
+  "files": ["src/hooks/useSession.ts", "src/components/AuthProvider.tsx"],
+  "whyItWorked": "useEffect guarantees session is available before render",
+  "pattern": "Wrap session-dependent components in AuthProvider"
+}
+```
+
+### Learned Rule Example
+
+```json
+{
+  "id": "rule-001",
+  "timestamp": "2026-01-15T12:00:00Z",
+  "trigger": "User corrected: 'Don't use localStorage directly'",
+  "rule": "For persistent data, always use the Session API, never localStorage directly",
+  "example": "WRONG: localStorage.setItem('token', token)\nRIGHT: session.setToken(token)",
+  "source": "user-correction"
+}
+```
+
+### Warning Output
+
+When a similar failure is detected:
+
+```
+⚠️  SIMILAR APPROACH FAILED BEFORE
+
+Failure ID: fail-001
+When: 2026-01-15T10:30:00Z
+Approach: Direct localStorage access for session tokens
+Files: src/components/Auth.tsx, src/lib/session.ts
+Error: TypeError: Cannot read property 'user' of undefined
+Root Cause: Session state not initialized before auth check
+
+Prevention Tip: Always verify session state before calling auth functions
+
+✅ SUCCESSFUL ALTERNATIVE EXISTS
+
+Approach: React hooks with useEffect for session initialization
+Why it worked: useEffect guarantees session is available before render
+Pattern: Wrap session-dependent components in AuthProvider
+```
+
+---
+
 ## Workflow Overview
 
 ### Large Features: PRD → Plan → Implement
@@ -267,6 +441,9 @@ your-project/
 ├── .claude/
 │   ├── commands/prp-core/   # PRP commands
 │   ├── PRPs/                # Generated artifacts
+│   ├── prp-memory/          # Memory system (NEW)
+│   │   ├── procedural/      # Failures & successes
+│   │   └── learned/         # User correction rules
 │   └── agents/              # Custom subagents
 ├── PRPs/
 │   ├── templates/           # PRP templates
@@ -317,12 +494,18 @@ MIT License
 
 ---
 
-## Support
+## Credits
 
-I spent a considerable amount of time creating these resources and prompts. If you find value in this project, please consider buying me a coffee to support my work.
+- **Original PRP**: [Wirasm/PRPs-agentic-eng](https://github.com/Wirasm/PRPs-agentic-eng) by Rasmus Widing
+- **Memory Architecture**: Inspired by [panayiotism/claude-harness](https://github.com/panayiotism/claude-harness)
+- **Ralph Loop Technique**: [Geoffrey Huntley](https://ghuntley.com/ralph/)
 
-**Buy me a coffee:** https://coff.ee/wirasm
+## Support the Original Author
+
+The original PRP methodology was created by Rasmus Widing. If you find value in this project, please consider supporting his work:
+
+**Buy him a coffee:** https://coff.ee/wirasm
 
 ---
 
-**The goal is one-pass implementation success through comprehensive context.**
+**The goal is one-pass implementation success through comprehensive context — and never making the same mistake twice.**
