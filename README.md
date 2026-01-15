@@ -263,6 +263,14 @@ The memory system prevents repeated failures and captures successful patterns ac
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
+│  Phase 2.4.1: Bootstrap from Graphiti (if available)        │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Query cross-project learnings by tech stack         │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
 │  Phase 2.5: Discover Semantic Memory (first run)            │
 └──────────────────────────┬──────────────────────────────────┘
                            │
@@ -299,13 +307,22 @@ The memory system prevents repeated failures and captures successful patterns ac
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ Add new entities, update architecture               │   │
 │  └─────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 4.6: Graduate to Graphiti (if available)             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Promote high-value learnings → cross-project memory │   │
+│  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Memory Structure (9 files)
+### Memory Structure (10 files)
 
 ```
 .claude/prp-memory/
+├── config.json            # Graphiti & graduation settings
 ├── working/
 │   └── context.json       # Session context (rebuilt each run)
 ├── episodic/
@@ -387,6 +404,77 @@ Approach: React hooks with useEffect for session initialization
 Why it worked: useEffect guarantees session is available before render
 Pattern: Wrap session-dependent components in AuthProvider
 ```
+
+---
+
+## Cross-Project Memory (Graphiti Integration)
+
+Optionally extend memory across projects using [Graphiti](https://github.com/getzep/graphiti) knowledge graph.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Local Memory (per-project)      Graphiti (cross-project)  │
+│  ═══════════════════════════    ══════════════════════════ │
+│  learned/rules.json       ──────► Learned Rules            │
+│  procedural/successes.json ─────► Success Patterns         │
+│  procedural/failures.json  ─────► Failure Patterns         │
+│  procedural/patterns.json  ─────► Code Patterns            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Phase 2.4.1 (Bootstrap)**: At loop start, queries Graphiti for relevant learnings based on tech stack.
+
+**Phase 4.6 (Graduate)**: After successful completion, promotes high-value learnings to Graphiti.
+
+### Tech-Stack Grouping
+
+Learnings are grouped by tech stack to avoid cross-contamination:
+- `typescript-nextjs` - Next.js projects
+- `python-fastapi` - Python API projects
+- `rust-axum` - Rust web projects
+
+### Configuration
+
+`.claude/prp-memory/config.json`:
+
+```json
+{
+  "graphiti": {
+    "enabled": true,
+    "groupIdStrategy": "tech-stack",
+    "graduation": {
+      "minConfidence": "medium",
+      "requireLessons": true,
+      "recurringFailureThreshold": 2
+    }
+  }
+}
+```
+
+### Graceful Degradation
+
+- If Graphiti is not installed: System works with local memory only
+- If Graphiti query fails: Warning logged, loop continues
+- No configuration required for local-only use
+
+### Setup Graphiti (Optional)
+
+```bash
+# Install Graphiti MCP server
+docker-compose -f graphiti/docker-compose.yml up -d
+
+# Add to mcp-funnel.json
+{
+  "graphiti": {
+    "command": "npx",
+    "args": ["mcp-remote@next", "http://localhost:8000/mcp"]
+  }
+}
+```
+
+See [Graphiti documentation](https://github.com/getzep/graphiti) for full setup.
 
 ---
 

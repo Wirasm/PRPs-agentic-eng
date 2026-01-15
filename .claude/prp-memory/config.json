@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "graphiti": {
+    "enabled": true,
+    "groupIdStrategy": "tech-stack",
+    "graduation": {
+      "minConfidence": "medium",
+      "requireLessons": true,
+      "recurringFailureThreshold": 2
+    },
+    "bootstrap": {
+      "maxFacts": 10,
+      "maxNodes": 5,
+      "includeGeneralGroup": true
+    }
+  }
+}

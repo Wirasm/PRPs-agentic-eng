@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-01-15
+
+### Added
+
+- **Graphiti Long-Term Memory Integration** (optional, cross-project)
+  - Phase 2.4.1: Bootstrap from Graphiti - Loads relevant learnings from knowledge graph
+  - Phase 4.6: Graduate to Graphiti - Promotes high-value learnings after success
+  - Tech-stack based `group_id` strategy (`typescript-nextjs`, `python-fastapi`, etc.)
+  - Graceful degradation when Graphiti unavailable
+
+- **New Configuration File**
+  - `.claude/prp-memory/config.json` - Graphiti settings and graduation criteria
+  - Configurable confidence thresholds, lesson requirements, failure thresholds
+  - Bootstrap limits for facts and nodes
+
+- **Graduation System**
+  - Learned rules (high/medium confidence) → Graphiti episodes
+  - Success patterns (with lessons) → Graphiti episodes
+  - Recurring failure patterns → Graphiti episodes (AVOID markers)
+  - Code patterns → Graphiti episodes
+  - Deduplication via content hashing (`graphitiHash` field)
+
+### Changed
+
+- Updated Phase 2 checkpoint to include Graphiti bootstrap status
+- Updated Success Criteria to include `GRAPHITI_GRADUATED`
+- Memory entries now track graduation status with `graphitiHash` and `graduatedAt`
+
+### Notes
+
+- Graphiti integration is **completely optional** - works without it
+- Uses MCP tool discovery for detection (works with mcp-funnel)
+- Cross-project learnings filtered by tech stack to avoid contamination
+
 ## [1.1.0] - 2026-01-15
 
 ### Added

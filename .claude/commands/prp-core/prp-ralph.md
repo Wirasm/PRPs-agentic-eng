@@ -267,6 +267,91 @@ Build fresh, relevant context from all memory layers:
    - {failure.approach} → {failure.rootCause}
    ```
 
+### 2.4.1 Bootstrap from Graphiti (Optional)
+
+If Graphiti long-term memory is available, query for relevant cross-project learnings:
+
+1. **Check Graphiti availability:**
+   ```
+   Use discover_tools_by_words("graphiti") to check if MCP tools exist.
+   ```
+
+   If no tools found:
+   ```
+   Graphiti not available - using local memory only
+   ```
+   Skip to Phase 2.5.
+
+2. **Read config for Graphiti settings:**
+   ```bash
+   cat .claude/prp-memory/config.json
+   ```
+   Check `graphiti.enabled` - if false, skip to Phase 2.5.
+
+3. **Read architecture for group_id:**
+   ```bash
+   cat .claude/prp-memory/semantic/architecture.json
+   ```
+
+4. **Compute group_id from tech stack:**
+   ```
+   group_id = "{techStack.language}-{techStack.framework}" or "general" if not set
+   ```
+   Examples: `typescript-nextjs`, `python-fastapi`, `rust-axum`
+
+5. **Query Graphiti for relevant learnings:**
+
+   Use `search_facts` with:
+   - `query`: Current task description from plan
+   - `group_ids`: ["{computed_group_id}", "general"] (if includeGeneralGroup: true)
+   - `num_results`: config.graphiti.bootstrap.maxFacts (default: 10)
+
+   Also use `search_nodes` with:
+   - `query`: Keywords from acceptance criteria
+   - `group_ids`: ["{computed_group_id}", "general"]
+   - `num_results`: config.graphiti.bootstrap.maxNodes (default: 5)
+
+6. **Inject relevant results into working/context.json:**
+   Add to `relevantMemory`:
+   ```json
+   {
+     "graphitiLearnings": [
+       {
+         "source": "graphiti",
+         "type": "fact|node",
+         "content": "{fact or node summary}",
+         "relevance": "{why this is relevant}",
+         "group_id": "{source group_id}"
+       }
+     ]
+   }
+   ```
+
+7. **Display Graphiti bootstrap summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  GRAPHITI CROSS-PROJECT MEMORY                                  │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Group: {group_id}                                              │
+   │  Relevant facts: {N} loaded                                     │
+   │  Relevant nodes: {N} loaded                                     │
+   │  Total learnings: {N}                                           │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+   If learnings found, display them:
+   ```
+   📚 CROSS-PROJECT LEARNINGS:
+   - [{type}] {content}
+   ```
+
+8. **If Graphiti unavailable or query fails:**
+   Log warning and continue with local-only flow:
+   ```
+   Graphiti query failed - continuing with local memory only
+   ```
+   Do NOT fail the loop - graceful degradation.
+
 ### 2.5 Discover Semantic Memory (First Run Only)
 
 Auto-detect project architecture on first run:
@@ -323,6 +408,7 @@ Auto-detect project architecture on first run:
 - [ ] All memory directories exist (5 layers)
 - [ ] All JSON files initialized (9 files)
 - [ ] Working context compiled
+- [ ] Graphiti bootstrap attempted (if available)
 - [ ] Semantic memory discovered (first run only)
 
 ---
@@ -841,6 +927,125 @@ After successful completion, update semantic memory with new discoveries:
 
 5. **Update lastUpdated timestamp in architecture.json**
 
+### 4.6 Graduate to Graphiti (Optional)
+
+After successful loop completion, graduate high-value learnings to cross-project memory:
+
+1. **Check Graphiti availability:**
+   ```
+   Use discover_tools_by_words("graphiti") to check if MCP tools exist.
+   ```
+
+   If no tools found:
+   ```
+   Graphiti not available - skipping graduation
+   ```
+   Continue to completion (no error).
+
+2. **Read config and architecture:**
+   ```bash
+   cat .claude/prp-memory/config.json
+   cat .claude/prp-memory/semantic/architecture.json
+   ```
+
+   Check `graphiti.enabled` - if false, skip graduation.
+   Compute `group_id` from tech stack (same as Phase 2.4.1).
+
+3. **Identify graduation candidates:**
+
+   **From learned/rules.json** (HIGH PRIORITY):
+   - Filter: `confidence` in ["high", "medium"] AND `active` = true
+   - Skip: entries with `graphitiHash` (already graduated)
+
+   **From procedural/successes.json** (HIGH PRIORITY):
+   - Filter: entries with non-empty `lessons` array (if `requireLessons: true`)
+   - Skip: entries with `graphitiHash`
+
+   **From procedural/failures.json** (MEDIUM PRIORITY):
+   - Filter: entries where same `category` appears >= `recurringFailureThreshold` times
+   - Skip: entries with `graphitiHash`
+
+   **From procedural/patterns.json** (MEDIUM PRIORITY):
+   - Filter: all patterns (they are pre-generalized)
+   - Skip: entries with `graphitiHash`
+
+4. **Graduate each candidate using add_episode:**
+
+   For learned rules:
+   ```json
+   {
+     "name": "learned-rule-{id}",
+     "episode_body": "{\"type\":\"learned_rule\",\"rule\":\"{rule}\",\"example\":\"{example}\",\"trigger\":\"{trigger}\",\"confidence\":\"{confidence}\",\"source_project\":\"{projectType from architecture}\"}",
+     "source": "json",
+     "source_description": "PRP Memory: Learned Rule",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For success patterns:
+   ```json
+   {
+     "name": "success-pattern-{id}",
+     "episode_body": "{\"type\":\"success_pattern\",\"approach\":\"{approach}\",\"pattern\":\"{pattern}\",\"whyItWorked\":\"{whyItWorked}\",\"lessons\":[\"{lessons}\"],\"files\":[\"{file patterns}\"]}",
+     "source": "json",
+     "source_description": "PRP Memory: Success Pattern",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For recurring failures:
+   ```json
+   {
+     "name": "failure-pattern-{category}",
+     "episode_body": "{\"type\":\"failure_pattern\",\"category\":\"{category}\",\"prevention\":\"{prevention}\",\"rootCause\":\"{common root cause}\",\"occurrences\":{count}}",
+     "source": "json",
+     "source_description": "PRP Memory: Failure Pattern (AVOID)",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For code patterns:
+   ```json
+   {
+     "name": "code-pattern-{id}",
+     "episode_body": "{\"type\":\"code_pattern\",\"name\":\"{name}\",\"description\":\"{description}\",\"example\":\"{example}\",\"applicability\":[\"{keywords}\"]}",
+     "source": "json",
+     "source_description": "PRP Memory: Code Pattern",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+5. **Mark graduated entries:**
+   After successful add_episode, update local entry:
+   ```json
+   {
+     "graphitiHash": "{first 12 chars of SHA256 hash of content}",
+     "graduatedAt": "{ISO-TIMESTAMP}"
+   }
+   ```
+
+6. **Display graduation summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  GRADUATED TO GRAPHITI                                          │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Group: {group_id}                                              │
+   │  Learned rules: {N} graduated                                   │
+   │  Success patterns: {N} graduated                                │
+   │  Failure patterns: {N} graduated                                │
+   │  Code patterns: {N} graduated                                   │
+   │  Total: {N} entries                                             │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+7. **On graduation failure:**
+   Log warning but do NOT fail the loop:
+   ```
+   Warning: Graphiti graduation failed for {N} entries - continuing
+   Error: {error message}
+   ```
+   The loop should still complete successfully.
+
 ---
 
 ## Handling Edge Cases
@@ -910,4 +1115,5 @@ cat .claude/PRPs/ralph-archives/2024-01-12-feature-name/learnings.md
 - **LEARNINGS_CAPTURED**: Progress log has useful insights
 - **PATTERNS_CONSOLIDATED**: Reusable patterns extracted
 - **ARCHIVE_CREATED**: Full run archived for future reference
+- **GRAPHITI_GRADUATED**: High-value learnings promoted (if Graphiti available)
 - **CLEAN_EXIT**: Completion promise output only when genuinely complete
