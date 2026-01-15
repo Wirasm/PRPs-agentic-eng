@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-01-15
+
+### Added
+
+- **Full 5-Layer Memory Architecture** (claude-harness compatible)
+  - **Working Memory** (`working/context.json`) - Session context, rebuilt each run
+  - **Episodic Memory** (`episodic/decisions.json`) - Rolling window of decisions (max 50, FIFO)
+  - **Semantic Memory** - Project knowledge layer
+    - `semantic/architecture.json` - Project type, tech stack, structure
+    - `semantic/entities.json` - Components, services, hooks, API routes
+    - `semantic/constraints.json` - Project rules and conventions
+  - **Procedural Memory** - Now includes `patterns.json` for extracted patterns
+  - **Learned Rules** - Enhanced with confidence levels and applicability filters
+
+- **New Ralph Loop Phases**
+  - Phase 2.4: Compile Working Context - Builds session context from all memory layers
+  - Phase 2.5: Discover Semantic Memory - Auto-detects project architecture (first run)
+  - Phase 3.0.5: Load Learned Rules - Displays applicable rules before implementation
+  - Phase 3.11: Extract Patterns - Generalizes successes into reusable patterns
+  - Phase 4.5: Update Semantic Memory - Records new entities after completion
+
+- **Enhanced Schemas**
+  - Failures now include `category` field for pattern matching
+  - Successes now include `verificationResults` and `lessons`
+  - Rules now include `confidence`, `active`, and `applicability` fields
+  - All files now include `version: 3` for schema tracking
+
+### Changed
+
+- Phase 2.3 now creates all 5 memory layers (9 files total)
+- Phase 3.0 now also reads `patterns.json` for known patterns
+- Phase 3.10 now records decisions to episodic memory
+- Phase 4.4 enhanced with confidence scoring and applicability filtering
+- Updated README with 5-layer memory architecture documentation
+- Updated memory structure diagram in documentation
+
 ## [1.0.0] - 2026-01-15
 
 ### Added

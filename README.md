@@ -230,7 +230,17 @@ The stop hook must be configured in `.claude/settings.local.json`:
 
 ## Memory System
 
-The memory system prevents repeated failures and captures successful patterns across sessions.
+The memory system prevents repeated failures and captures successful patterns across sessions. It implements a **5-layer architecture** inspired by [claude-harness](https://github.com/panayiotism/claude-harness).
+
+### The 5 Memory Layers
+
+| Layer | Purpose | Persistence |
+|-------|---------|-------------|
+| **Working** | Session context, compiled from other layers | Rebuilt each session |
+| **Episodic** | Rolling window of recent decisions (max 50) | FIFO pruning |
+| **Semantic** | Project architecture, entities, constraints | Permanent |
+| **Procedural** | Failures, successes, patterns | Append-only |
+| **Learned** | User correction rules | Append-only |
 
 ### How It Works
 
@@ -241,13 +251,30 @@ The memory system prevents repeated failures and captures successful patterns ac
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
+│  Phase 2.4: Compile Working Context                         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 1. Query failures → avoidApproaches (top 5)         │   │
+│  │ 2. Query successes → projectPatterns (top 5)        │   │
+│  │ 3. Query decisions → recentDecisions (last 20)      │   │
+│  │ 4. Load applicable learned rules                    │   │
+│  │ 5. Write to working/context.json                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 2.5: Discover Semantic Memory (first run)            │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
 │  Phase 3.0: Failure Prevention Check                        │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │ 1. Read failures.json                                │   │
+│  │ 1. Read failures.json + patterns.json               │   │
 │  │ 2. Check for similar approaches/files/errors         │   │
 │  │ 3. WARN if match found                               │   │
 │  │ 4. Check successes.json for alternatives             │   │
-│  │ 5. Apply learned rules from rules.json               │   │
+│  │ 5. Display applicable code patterns                  │   │
 │  └─────────────────────────────────────────────────────┘   │
 └──────────────────────────┬──────────────────────────────────┘
                            │
@@ -258,23 +285,41 @@ The memory system prevents repeated failures and captures successful patterns ac
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Phase 3.10: Record to Memory                               │
+│  Phase 3.10-3.11: Record to Memory                          │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │ If FAILED:  → Append to failures.json               │   │
-│  │ If SUCCESS: → Append to successes.json              │   │
+│  │ Record failure/success → procedural memory          │   │
+│  │ Record decision → episodic memory                   │   │
+│  │ Extract patterns → patterns.json                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 4.5: Update Semantic Memory                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Add new entities, update architecture               │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Memory Structure
+### Memory Structure (9 files)
 
 ```
 .claude/prp-memory/
+├── working/
+│   └── context.json       # Session context (rebuilt each run)
+├── episodic/
+│   └── decisions.json     # Rolling decision window (max 50)
+├── semantic/
+│   ├── architecture.json  # Project type, tech stack, structure
+│   ├── entities.json      # Components, services, hooks
+│   └── constraints.json   # Project rules and conventions
 ├── procedural/
-│   ├── failures.json      # Failed approaches with root cause analysis
-│   └── successes.json     # Successful patterns for reuse
+│   ├── failures.json      # Failed approaches with root cause
+│   ├── successes.json     # Successful patterns for reuse
+│   └── patterns.json      # Extracted generalizable patterns
 └── learned/
-    └── rules.json         # User corrections captured as rules
+    └── rules.json         # User corrections as rules
 ```
 
 ### Failure Entry Example

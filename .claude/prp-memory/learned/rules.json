@@ -1,1 +1,11 @@
-{"rules":[]}
+{
+  "version": 3,
+  "lastUpdated": null,
+  "metadata": {
+    "totalRules": 0,
+    "projectSpecific": 0,
+    "general": 0,
+    "lastReflection": null
+  },
+  "rules": []
+}
