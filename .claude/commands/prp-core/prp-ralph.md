@@ -149,14 +149,88 @@ CRITICAL REQUIREMENTS:
 Starting iteration 1...
 ```
 
+### 2.3 Initialize Memory System
+
+Create memory directory structure if not present:
+
+```bash
+# Create memory directories
+mkdir -p .claude/prp-memory/procedural
+mkdir -p .claude/prp-memory/learned
+
+# Initialize empty JSON files if not present
+if [ ! -f .claude/prp-memory/procedural/failures.json ]; then
+  echo '{"entries":[]}' > .claude/prp-memory/procedural/failures.json
+fi
+
+if [ ! -f .claude/prp-memory/procedural/successes.json ]; then
+  echo '{"entries":[]}' > .claude/prp-memory/procedural/successes.json
+fi
+
+if [ ! -f .claude/prp-memory/learned/rules.json ]; then
+  echo '{"rules":[]}' > .claude/prp-memory/learned/rules.json
+fi
+```
+
 **PHASE_2_CHECKPOINT:**
 - [ ] State file created
 - [ ] Archive directory exists
 - [ ] Startup message displayed
+- [ ] Memory directories exist
+- [ ] JSON files initialized
 
 ---
 
 ## Phase 3: EXECUTE - Work on Plan
+
+### 3.0 Failure Prevention Check (Memory System)
+
+**BEFORE implementing anything:**
+
+1. **Read failures.json:**
+   ```bash
+   cat .claude/prp-memory/procedural/failures.json
+   ```
+
+2. **Check for similar patterns:**
+   - Compare planned approach with documented failures
+   - Check if similar files are affected
+   - Check if similar error messages occurred in the past
+
+3. **If match found - WARN:**
+   ```
+   ⚠️  SIMILAR APPROACH FAILED BEFORE
+
+   Failure ID: {id}
+   When: {timestamp}
+   Approach: {approach}
+   Files: {files}
+   Error: {errors}
+   Root Cause: {rootCause}
+
+   Prevention Tip: {prevention}
+   ```
+
+4. **Check successes.json for alternatives:**
+   ```bash
+   cat .claude/prp-memory/procedural/successes.json
+   ```
+
+   If a successful approach exists for a similar problem:
+   ```
+   ✅ SUCCESSFUL ALTERNATIVE EXISTS
+
+   Approach: {approach}
+   Why it worked: {whyItWorked}
+   Pattern: {pattern}
+   ```
+
+5. **Check learned rules:**
+   ```bash
+   cat .claude/prp-memory/learned/rules.json
+   ```
+
+   Apply all relevant rules during implementation.
 
 ### 3.1 Read Context First
 
@@ -259,6 +333,52 @@ If you discover a **reusable pattern**, add it to the "Codebase Patterns" sectio
 
 Only add patterns that are **general and reusable**, not iteration-specific.
 
+### 3.10 Record to Memory (After Validation)
+
+After EVERY validation (whether successful or not):
+
+#### On FAILED Validation:
+
+Append to `.claude/prp-memory/procedural/failures.json`:
+
+```json
+{
+  "id": "fail-{UNIQUE-ID}",
+  "timestamp": "{ISO-TIMESTAMP}",
+  "plan": "{plan_path}",
+  "iteration": {iteration_number},
+  "approach": "{What was attempted - 1-2 sentences}",
+  "files": ["{Affected files}"],
+  "errors": ["{Exact error messages}"],
+  "rootCause": "{Analysis of WHY it failed}",
+  "prevention": "{How to avoid this in the future}"
+}
+```
+
+**IMPORTANT:**
+- `rootCause` must be a REAL analysis, not just repeating the error message
+- `prevention` must be ACTIONABLE
+
+#### On SUCCESSFUL Validation:
+
+Append to `.claude/prp-memory/procedural/successes.json`:
+
+```json
+{
+  "id": "success-{UNIQUE-ID}",
+  "timestamp": "{ISO-TIMESTAMP}",
+  "plan": "{plan_path}",
+  "approach": "{What worked - 1-2 sentences}",
+  "files": ["{Affected files}"],
+  "whyItWorked": "{Why this approach was successful}",
+  "pattern": "{Reusable pattern for similar problems}"
+}
+```
+
+**IMPORTANT:**
+- Only document SIGNIFICANT successes (not every small fix)
+- `pattern` should be generalizable
+
 **PHASE_3_CHECKPOINT:**
 - [ ] Context read (patterns, previous progress)
 - [ ] All tasks attempted
@@ -266,6 +386,7 @@ Only add patterns that are **general and reusable**, not iteration-specific.
 - [ ] Plan file updated
 - [ ] State file progress log updated
 - [ ] Patterns consolidated if discovered
+- [ ] Memory updated (failures or successes recorded)
 
 ---
 
@@ -379,6 +500,35 @@ If validations are not all passing:
 - The stop hook will feed the prompt back for next iteration
 
 **Do NOT output the completion promise if validations are failing.**
+
+### 4.4 Extract Learned Rules (Optional)
+
+If the user made corrections during the loop:
+
+1. **Identify the correction:**
+   - What did the user say?
+   - What was wrong with the original approach?
+
+2. **Generalize to a rule:**
+   - Not project-specific, but generally applicable
+   - Include a concrete example
+
+3. **Append to learned/rules.json:**
+   ```json
+   {
+     "id": "rule-{UNIQUE-ID}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "trigger": "{What triggered the correction}",
+     "rule": "{Generalized rule}",
+     "example": "{Concrete example: WRONG vs RIGHT}",
+     "source": "user-correction"
+   }
+   ```
+
+**Detection triggers for user corrections:**
+- User says "Korrektur:", "Correction:", "Wrong:", "Falsch:"
+- User explicitly corrects an approach
+- User provides alternative that worked
 
 ---
 
