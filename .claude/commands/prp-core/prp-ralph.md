@@ -139,10 +139,120 @@ To cancel: `/prp-ralph-cancel`
 
 CRITICAL REQUIREMENTS:
 - Work through ALL tasks in the plan
+- **MUST write tests for new code** - this is NOT optional, regardless of what the plan says
 - Run ALL validation commands
 - Fix failures before proceeding
 - Only output <promise>COMPLETE</promise> when ALL validations pass
 - Do NOT lie to exit - the loop continues until genuinely complete
+
+TEST REQUIREMENT (supplements/overrides plan):
+- Tests are MANDATORY regardless of what the plan says about test timing
+- If plan specifies tests: write those tests NOW (not later)
+- If plan omits tests: write tests anyway
+- If plan defers tests to later phase: IGNORE that, write tests NOW
+- Validation FAILS if new code has no corresponding tests
+
+UNIT TEST FRAMEWORKS BY LANGUAGE:
+- Python: pytest
+- JavaScript/TypeScript: jest, vitest, mocha
+- Java: JUnit
+- Rust: cargo test
+- Go: go test ./...
+- Use whatever framework the project already uses, or the standard for the language
+
+E2E/SCREEN TEST REQUIREMENT:
+- E2E tests are MANDATORY if:
+  - Plan explicitly specifies E2E/screen tests, OR
+  - New UI components, pages, or user-facing features are created
+- E2E tests are OPTIONAL for:
+  - Backend-only changes (APIs, services, CLI)
+  - Internal refactoring without UI impact
+  - Library/utility code
+
+E2E TEST FRAMEWORKS:
+- Playwright (RECOMMENDED - cross-browser incl. Safari, faster, native parallelization, less flaky)
+- Cypress (simpler setup, but no Safari, paid parallelization)
+- Selenium / WebDriver (legacy, still common)
+- Testing Library (@testing-library/react, @testing-library/vue - for component tests)
+- Use whatever E2E framework the project already uses
+
+PERFORMANCE TEST REQUIREMENT:
+- Performance tests are MANDATORY if:
+  - Plan explicitly specifies performance tests/benchmarks, OR
+  - Performance-critical code is created/modified (algorithms, DB queries, high-load endpoints), OR
+  - Plan mentions performance requirements (latency, throughput, response time)
+- Performance tests are OPTIONAL for:
+  - UI-only changes without backend impact
+  - Configuration changes
+  - Documentation updates
+
+PERFORMANCE TEST FRAMEWORKS:
+- k6 (recommended for load testing)
+- Artillery
+- Locust (Python)
+- JMeter
+- Lighthouse (web performance)
+- Benchmark.js (micro-benchmarks)
+- pytest-benchmark (Python)
+- Use whatever performance framework the project already uses
+
+INTEGRATION TEST REQUIREMENT:
+- Integration tests are MANDATORY if:
+  - Plan involves API + database interactions, OR
+  - Multiple services/modules work together, OR
+  - External service integrations (APIs, auth providers, etc.)
+- Integration tests are OPTIONAL for:
+  - Pure UI changes
+  - Isolated utility functions
+  - Configuration changes
+
+INTEGRATION TEST FRAMEWORKS:
+- Testcontainers (RECOMMENDED - real DB/services in Docker)
+- Supertest (Node.js API testing)
+- pytest + httpx (Python API testing)
+- REST Assured (Java)
+- Use whatever the project already uses
+
+SECURITY TEST REQUIREMENT:
+- Security tests are MANDATORY if:
+  - Plan involves authentication/authorization, OR
+  - User input handling (forms, APIs), OR
+  - File uploads, OR
+  - Plan explicitly mentions security requirements
+- Security tests are OPTIONAL for:
+  - Internal refactoring without security impact
+  - UI-only changes
+  - Documentation updates
+
+SECURITY TEST TOOLS:
+- SAST (Static):
+  - Semgrep (RECOMMENDED - open source, customizable, CI-friendly)
+  - Snyk Code (developer-friendly, GitHub integration)
+  - SonarQube (widely adopted)
+  - CodeQL (open source, GitHub native)
+- DAST (Dynamic):
+  - OWASP ZAP (RECOMMENDED - open source, free)
+  - Burp Suite (pentesting standard)
+- Dependency Scanning:
+  - npm audit / yarn audit (Node.js)
+  - pip-audit / safety (Python)
+  - Snyk (multi-language)
+
+ACCESSIBILITY TEST REQUIREMENT:
+- Accessibility tests are MANDATORY if:
+  - Plan involves new UI components, pages, or user interactions, OR
+  - Plan explicitly mentions accessibility/a11y/WCAG requirements
+- Accessibility tests are OPTIONAL for:
+  - Backend-only changes
+  - CLI tools
+  - Internal admin interfaces (but still recommended)
+
+ACCESSIBILITY TEST TOOLS:
+- axe-core (RECOMMENDED - integrates with Playwright/Jest/Cypress)
+- Pa11y (CLI, CI/CD automation)
+- Lighthouse (quick audits, performance + a11y)
+- WAVE (browser extension for manual checks)
+- NOTE: Automated tools catch only 20-50% of a11y issues - manual testing still needed!
 
 ---
 
@@ -521,7 +631,74 @@ For each incomplete task:
 3. Implement the change
 4. Run task-specific validation if specified
 
-### 3.4 Validate
+### 3.4 Write Tests (MANDATORY)
+
+**Before running validation, ensure tests exist for new code:**
+
+#### Unit Tests (ALWAYS required):
+1. Check if test files exist for new modules
+2. If NOT: write tests first
+3. Every new function needs at least one test
+4. Edge cases from the plan need test coverage
+
+**Unit test file patterns by language:**
+- Python: `tests/test_*.py` or `*_test.py`
+- JS/TS: `*.test.ts`, `*.spec.ts`, `__tests__/*.ts`
+- Java: `src/test/java/**/*Test.java`
+- Rust: `#[test]` in same file or `tests/` directory
+- Go: `*_test.go`
+
+#### E2E/Screen Tests (required for UI changes):
+1. Check if new UI components, pages, or user flows were created
+2. If YES: write E2E tests for the new UI
+3. If plan specifies E2E tests: write them regardless of change type
+
+**E2E test file patterns:**
+- Playwright: `tests/*.spec.ts`, `e2e/*.spec.ts`
+- Cypress: `cypress/e2e/*.cy.ts`, `cypress/e2e/*.cy.js`
+- Testing Library: `*.test.tsx` (component tests with user interactions)
+
+#### Performance Tests (required for performance-critical code):
+1. Check if performance-critical code was created/modified
+2. If YES: write performance tests/benchmarks
+3. If plan specifies performance requirements: write tests to verify them
+
+**Performance test patterns:**
+- k6: `k6/*.js`, `load-tests/*.js`
+- Locust: `locustfile.py`, `load_tests/*.py`
+- Benchmarks: `benchmarks/*.ts`, `*_bench_test.go`, `benches/*.rs`
+
+#### Integration Tests (required for API/DB/service interactions):
+1. Check if API endpoints, database interactions, or service integrations were created
+2. If YES: write integration tests
+3. Use Testcontainers for real database/service testing when possible
+
+**Integration test patterns:**
+- Node.js: `tests/integration/*.test.ts`, `__tests__/integration/*`
+- Python: `tests/integration/test_*.py`
+- Java: `src/test/java/**/integration/*IT.java`
+
+#### Security Tests (required for auth/input handling):
+1. Check if authentication, authorization, or user input handling was created
+2. If YES: run SAST scan and write security-focused tests
+3. Check dependencies for known vulnerabilities
+
+**Security test commands:**
+- `npx semgrep --config auto .` (SAST)
+- `npm audit` / `pip-audit` (dependency scan)
+- Write tests for auth bypass, injection, etc.
+
+#### Accessibility Tests (required for UI changes):
+1. Check if new UI components or pages were created
+2. If YES: run axe-core checks in tests
+3. Playwright example: `await expect(page).toHaveNoViolations()` (with @axe-core/playwright)
+
+**Accessibility test patterns:**
+- Playwright + axe: `tests/*.a11y.spec.ts`
+- Jest + axe: `*.a11y.test.tsx`
+- Pa11y CLI: `pa11y http://localhost:3000`
+
+### 3.5 Validate
 
 Run ALL validation commands from the plan:
 
@@ -533,7 +710,12 @@ bun test || npm test
 bun run build || npm run build
 ```
 
-### 3.5 Track Results
+**STRICT VALIDATION RULE:**
+- If `test` command returns "no tests found" or similar → FAIL
+- New code without tests = validation failure
+- Do NOT skip tests even if plan defers them to later phase
+
+### 3.6 Track Results
 
 | Check | Result | Notes |
 |-------|--------|-------|
@@ -542,21 +724,21 @@ bun run build || npm run build
 | Tests | PASS/FAIL | {details} |
 | Build | PASS/FAIL | {details} |
 
-### 3.6 If Any Validation Fails
+### 3.7 If Any Validation Fails
 
 1. Analyze the failure
 2. Fix the issue
 3. Re-run validation
 4. Repeat until passing
 
-### 3.7 Update Plan File
+### 3.8 Update Plan File
 
 After each significant change:
 - Mark completed tasks with checkboxes
 - Add notes about what was done
 - Document any deviations
 
-### 3.8 Update State File Progress Log
+### 3.9 Update State File Progress Log
 
 Append to Progress Log section using this format:
 
@@ -585,7 +767,7 @@ Append to Progress Log section using this format:
 ---
 ```
 
-### 3.9 Consolidate Codebase Patterns
+### 3.10 Consolidate Codebase Patterns
 
 If you discover a **reusable pattern**, add it to the "Codebase Patterns" section at the TOP of the state file:
 
@@ -599,7 +781,7 @@ If you discover a **reusable pattern**, add it to the "Codebase Patterns" sectio
 
 Only add patterns that are **general and reusable**, not iteration-specific.
 
-### 3.10 Record to Memory (After Validation)
+### 3.11 Record to Memory (After Validation)
 
 After EVERY validation (whether successful or not):
 
@@ -683,7 +865,7 @@ After EVERY validation (whether successful or not):
 - `pattern` should be generalizable
 - `lessons` capture key insights for future reference
 
-### 3.11 Extract Patterns
+### 3.12 Extract Patterns
 
 After successful validation, analyze for generalizable patterns:
 

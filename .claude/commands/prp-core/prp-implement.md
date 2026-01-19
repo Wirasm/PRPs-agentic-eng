@@ -198,7 +198,7 @@ If lint errors:
 2. Re-check
 3. Manual fix remaining issues
 
-### 4.2 Unit Tests
+### 4.2 Unit Tests (ALWAYS required)
 
 **You MUST write or update tests for new code.** This is not optional.
 
@@ -210,11 +210,12 @@ If lint errors:
 
 **Write tests**, then run the test command from the plan.
 
-Common patterns:
-- JS/TS: `{runner} test` or `{runner} run test`
-- Python: `pytest` or `uv run pytest`
-- Rust: `cargo test`
-- Go: `go test ./...`
+**Unit test frameworks:**
+- Python: pytest (recommended)
+- JS/TS: Jest, Vitest, Mocha
+- Java: JUnit
+- Rust: cargo test
+- Go: go test ./...
 
 **If tests fail:**
 
@@ -224,7 +225,84 @@ Common patterns:
 4. Re-run tests
 5. Repeat until green
 
-### 4.3 Build Check
+### 4.3 E2E/Screen Tests (required for UI changes)
+
+**MANDATORY if:** New UI components, pages, or user-facing features were created.
+
+**E2E test frameworks:**
+- Playwright (RECOMMENDED - cross-browser incl. Safari, faster, native parallelization, less flaky)
+- Cypress (simpler setup, but no Safari, paid parallelization)
+- Testing Library (for component tests with user interactions)
+
+**Test patterns:**
+- Playwright: `tests/*.spec.ts`, `e2e/*.spec.ts`
+- Cypress: `cypress/e2e/*.cy.ts`
+
+### 4.4 Integration Tests (required for API/DB/service interactions)
+
+**MANDATORY if:** API endpoints, database interactions, or service integrations were created.
+
+**Integration test frameworks:**
+- Testcontainers (RECOMMENDED - real DB/services in Docker)
+- Supertest (Node.js API testing)
+- pytest + httpx (Python API testing)
+- REST Assured (Java)
+
+**Test patterns:**
+- Node.js: `tests/integration/*.test.ts`
+- Python: `tests/integration/test_*.py`
+
+### 4.5 Performance Tests (required for performance-critical code)
+
+**MANDATORY if:** Performance-critical code was created (algorithms, DB queries, high-load endpoints) OR plan specifies performance requirements.
+
+**Performance test frameworks:**
+- k6 (RECOMMENDED for load testing)
+- Artillery, Locust (Python), JMeter
+- Lighthouse (web performance)
+- pytest-benchmark (Python), Benchmark.js (micro-benchmarks)
+
+### 4.6 Security Tests (required for auth/input handling)
+
+**MANDATORY if:** Authentication, authorization, user input handling, or file uploads were implemented.
+
+**Security test tools:**
+- SAST: Semgrep (RECOMMENDED), Snyk Code, SonarQube, CodeQL
+- DAST: OWASP ZAP (RECOMMENDED), Burp Suite
+- Dependency scanning: `npm audit`, `pip-audit`, Snyk
+
+**Run at minimum:**
+```bash
+# SAST scan
+npx semgrep --config auto .
+# Dependency check
+npm audit  # or pip-audit for Python
+```
+
+### 4.7 Accessibility Tests (required for UI changes)
+
+**MANDATORY if:** New UI components, pages, or user interactions were created.
+
+**Accessibility test tools:**
+- axe-core (RECOMMENDED - integrates with Playwright/Jest/Cypress)
+- Pa11y (CLI, CI/CD automation)
+- Lighthouse (quick audits)
+
+**NOTE:** Automated tools catch only 20-50% of a11y issues - manual testing still recommended!
+
+**Playwright + axe example:**
+```typescript
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('should have no accessibility violations', async ({ page }) => {
+  await page.goto('/');
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+```
+
+### 4.8 Build Check
 
 **Run the build command from the plan's Validation Commands section.**
 
@@ -236,25 +314,7 @@ Common patterns:
 
 **Must complete without errors.**
 
-### 4.4 Integration Testing (if applicable)
-
-**If the plan involves API/server changes, use the integration test commands from the plan.**
-
-Example pattern:
-```bash
-# Start server in background (command varies by project)
-{runner} run dev &
-SERVER_PID=$!
-sleep 3
-
-# Test endpoints (adjust URL/port per project config)
-curl -s http://localhost:{port}/health | jq
-
-# Stop server
-kill $SERVER_PID
-```
-
-### 4.5 Edge Case Testing
+### 4.9 Edge Case Testing
 
 Run any edge case tests specified in the plan.
 
@@ -262,9 +322,13 @@ Run any edge case tests specified in the plan.
 
 - [ ] Type-check passes (command from plan)
 - [ ] Lint passes (0 errors)
-- [ ] Tests pass (all green)
+- [ ] Unit tests pass (all green)
+- [ ] E2E tests pass (if UI changes)
+- [ ] Integration tests pass (if API/DB changes)
+- [ ] Performance tests pass (if performance-critical)
+- [ ] Security scan clean (if auth/input handling)
+- [ ] Accessibility tests pass (if UI changes)
 - [ ] Build succeeds
-- [ ] Integration tests pass (if applicable)
 
 ---
 
