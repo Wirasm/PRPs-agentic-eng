@@ -12,3 +12,6 @@ wheels/
 .env
 
 .ruff_cache
+
+# Local rules (symlinks to user's dotfiles)
+.claude/rules/

@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "computedAt": null,
+  "sessionId": null,
+  "activeFeature": null,
+  "relevantMemory": {
+    "recentDecisions": [],
+    "projectPatterns": [],
+    "avoidApproaches": [],
+    "learnedRules": []
+  },
+  "currentTask": null,
+  "compilationLog": []
+}

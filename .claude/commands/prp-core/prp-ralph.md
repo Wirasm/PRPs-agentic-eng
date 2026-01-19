@@ -139,24 +139,474 @@ To cancel: `/prp-ralph-cancel`
 
 CRITICAL REQUIREMENTS:
 - Work through ALL tasks in the plan
+- **MUST write tests for new code** - this is NOT optional, regardless of what the plan says
 - Run ALL validation commands
 - Fix failures before proceeding
 - Only output <promise>COMPLETE</promise> when ALL validations pass
 - Do NOT lie to exit - the loop continues until genuinely complete
+
+TEST REQUIREMENT (supplements/overrides plan):
+- Tests are MANDATORY regardless of what the plan says about test timing
+- If plan specifies tests: write those tests NOW (not later)
+- If plan omits tests: write tests anyway
+- If plan defers tests to later phase: IGNORE that, write tests NOW
+- Validation FAILS if new code has no corresponding tests
+
+UNIT TEST FRAMEWORKS BY LANGUAGE:
+- Python: pytest
+- JavaScript/TypeScript: jest, vitest, mocha
+- Java: JUnit
+- Rust: cargo test
+- Go: go test ./...
+- Use whatever framework the project already uses, or the standard for the language
+
+E2E/SCREEN TEST REQUIREMENT:
+- E2E tests are MANDATORY if:
+  - Plan explicitly specifies E2E/screen tests, OR
+  - New UI components, pages, or user-facing features are created
+- E2E tests are OPTIONAL for:
+  - Backend-only changes (APIs, services, CLI)
+  - Internal refactoring without UI impact
+  - Library/utility code
+
+E2E TEST FRAMEWORKS:
+- Playwright (RECOMMENDED - cross-browser incl. Safari, faster, native parallelization, less flaky)
+- Cypress (simpler setup, but no Safari, paid parallelization)
+- Selenium / WebDriver (legacy, still common)
+- Testing Library (@testing-library/react, @testing-library/vue - for component tests)
+- Use whatever E2E framework the project already uses
+
+PERFORMANCE TEST REQUIREMENT:
+- Performance tests are MANDATORY if:
+  - Plan explicitly specifies performance tests/benchmarks, OR
+  - Performance-critical code is created/modified (algorithms, DB queries, high-load endpoints), OR
+  - Plan mentions performance requirements (latency, throughput, response time)
+- Performance tests are OPTIONAL for:
+  - UI-only changes without backend impact
+  - Configuration changes
+  - Documentation updates
+
+PERFORMANCE TEST FRAMEWORKS:
+- k6 (recommended for load testing)
+- Artillery
+- Locust (Python)
+- JMeter
+- Lighthouse (web performance)
+- Benchmark.js (micro-benchmarks)
+- pytest-benchmark (Python)
+- Use whatever performance framework the project already uses
+
+INTEGRATION TEST REQUIREMENT:
+- Integration tests are MANDATORY if:
+  - Plan involves API + database interactions, OR
+  - Multiple services/modules work together, OR
+  - External service integrations (APIs, auth providers, etc.)
+- Integration tests are OPTIONAL for:
+  - Pure UI changes
+  - Isolated utility functions
+  - Configuration changes
+
+INTEGRATION TEST FRAMEWORKS:
+- Testcontainers (RECOMMENDED - real DB/services in Docker)
+- Supertest (Node.js API testing)
+- pytest + httpx (Python API testing)
+- REST Assured (Java)
+- Use whatever the project already uses
+
+SECURITY TEST REQUIREMENT:
+- Security tests are MANDATORY if:
+  - Plan involves authentication/authorization, OR
+  - User input handling (forms, APIs), OR
+  - File uploads, OR
+  - Plan explicitly mentions security requirements
+- Security tests are OPTIONAL for:
+  - Internal refactoring without security impact
+  - UI-only changes
+  - Documentation updates
+
+SECURITY TEST TOOLS:
+- SAST (Static):
+  - Semgrep (RECOMMENDED - open source, customizable, CI-friendly)
+  - Snyk Code (developer-friendly, GitHub integration)
+  - SonarQube (widely adopted)
+  - CodeQL (open source, GitHub native)
+- DAST (Dynamic):
+  - OWASP ZAP (RECOMMENDED - open source, free)
+  - Burp Suite (pentesting standard)
+- Dependency Scanning:
+  - npm audit / yarn audit (Node.js)
+  - pip-audit / safety (Python)
+  - Snyk (multi-language)
+
+ACCESSIBILITY TEST REQUIREMENT:
+- Accessibility tests are MANDATORY if:
+  - Plan involves new UI components, pages, or user interactions, OR
+  - Plan explicitly mentions accessibility/a11y/WCAG requirements
+- Accessibility tests are OPTIONAL for:
+  - Backend-only changes
+  - CLI tools
+  - Internal admin interfaces (but still recommended)
+
+ACCESSIBILITY TEST TOOLS:
+- axe-core (RECOMMENDED - integrates with Playwright/Jest/Cypress)
+- Pa11y (CLI, CI/CD automation)
+- Lighthouse (quick audits, performance + a11y)
+- WAVE (browser extension for manual checks)
+- NOTE: Automated tools catch only 20-50% of a11y issues - manual testing still needed!
 
 ---
 
 Starting iteration 1...
 ```
 
+### 2.3 Initialize Memory System
+
+Create complete memory directory structure (5 layers, 9 files):
+
+```bash
+# Create all memory directories
+mkdir -p .claude/prp-memory/working
+mkdir -p .claude/prp-memory/episodic
+mkdir -p .claude/prp-memory/semantic
+mkdir -p .claude/prp-memory/procedural
+mkdir -p .claude/prp-memory/learned
+
+# Working memory (rebuilt each session)
+echo '{"version":3,"computedAt":null,"sessionId":null,"activeFeature":null,"relevantMemory":{"recentDecisions":[],"projectPatterns":[],"avoidApproaches":[],"learnedRules":[]},"currentTask":null,"compilationLog":[]}' > .claude/prp-memory/working/context.json
+
+# Episodic memory (rolling window)
+if [ ! -f .claude/prp-memory/episodic/decisions.json ]; then
+  echo '{"version":3,"maxEntries":50,"entries":[]}' > .claude/prp-memory/episodic/decisions.json
+fi
+
+# Semantic memory (project knowledge)
+if [ ! -f .claude/prp-memory/semantic/architecture.json ]; then
+  echo '{"version":3,"projectType":null,"techStack":{},"structure":{},"patterns":{},"discoveredAt":null,"lastUpdated":null}' > .claude/prp-memory/semantic/architecture.json
+fi
+
+if [ ! -f .claude/prp-memory/semantic/entities.json ]; then
+  echo '{"version":3,"entities":[]}' > .claude/prp-memory/semantic/entities.json
+fi
+
+if [ ! -f .claude/prp-memory/semantic/constraints.json ]; then
+  echo '{"version":3,"constraints":[],"rules":[]}' > .claude/prp-memory/semantic/constraints.json
+fi
+
+# Procedural memory (failures, successes, patterns)
+if [ ! -f .claude/prp-memory/procedural/failures.json ]; then
+  echo '{"version":3,"entries":[]}' > .claude/prp-memory/procedural/failures.json
+fi
+
+if [ ! -f .claude/prp-memory/procedural/successes.json ]; then
+  echo '{"version":3,"entries":[]}' > .claude/prp-memory/procedural/successes.json
+fi
+
+if [ ! -f .claude/prp-memory/procedural/patterns.json ]; then
+  echo '{"version":3,"patterns":{"codePatterns":[],"namingConventions":{},"projectSpecificRules":[]}}' > .claude/prp-memory/procedural/patterns.json
+fi
+
+# Learned rules
+if [ ! -f .claude/prp-memory/learned/rules.json ]; then
+  echo '{"version":3,"lastUpdated":null,"metadata":{"totalRules":0,"projectSpecific":0,"general":0,"lastReflection":null},"rules":[]}' > .claude/prp-memory/learned/rules.json
+fi
+```
+
+### 2.4 Compile Working Context
+
+Build fresh, relevant context from all memory layers:
+
+1. **Generate session ID:**
+   ```
+   sessionId = "ralph-{plan-name}-{ISO-timestamp}"
+   ```
+
+2. **Read plan file to extract:**
+   - Task description
+   - Related files
+   - Acceptance criteria
+
+3. **Query procedural memory for failures to AVOID:**
+   ```bash
+   cat .claude/prp-memory/procedural/failures.json
+   ```
+   - Filter entries where `files` overlap with plan's related files
+   - Filter entries where `approach` contains similar keywords
+   - Take top 5 most recent relevant failures
+   - Add to `relevantMemory.avoidApproaches`
+
+4. **Query procedural memory for successful patterns:**
+   ```bash
+   cat .claude/prp-memory/procedural/successes.json
+   ```
+   - Filter for similar file patterns or task types
+   - Take top 5 most relevant successes
+   - Add to `relevantMemory.projectPatterns`
+
+5. **Query episodic memory for recent decisions:**
+   ```bash
+   cat .claude/prp-memory/episodic/decisions.json
+   ```
+   - Get entries from last 7 days OR last 20 entries (whichever is smaller)
+   - Add to `relevantMemory.recentDecisions`
+
+6. **Load applicable learned rules:**
+   ```bash
+   cat .claude/prp-memory/learned/rules.json
+   ```
+   - Filter rules where `active: true`
+   - Filter rules where `applicability.always: true` OR file patterns match
+   - Add to `relevantMemory.learnedRules`
+
+7. **Write compiled context to working/context.json**
+
+8. **Display memory summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  MEMORY CONTEXT COMPILED                                        │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Recent decisions: {N} loaded                                   │
+   │  Success patterns: {N} loaded                                   │
+   │  Approaches to AVOID: {N} loaded                                │
+   │  Learned rules: {N} applied                                     │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+   If `avoidApproaches` has entries, display prominently:
+   ```
+   ⚠️  APPROACHES TO AVOID (from past failures):
+   - {failure.approach} → {failure.rootCause}
+   ```
+
+### 2.4.1 Bootstrap from Graphiti (Optional)
+
+If Graphiti long-term memory is available, query for relevant cross-project learnings:
+
+1. **Check Graphiti availability:**
+   ```
+   Use discover_tools_by_words("graphiti") to check if MCP tools exist.
+   ```
+
+   If no tools found:
+   ```
+   Graphiti not available - using local memory only
+   ```
+   Skip to Phase 2.5.
+
+2. **Read config for Graphiti settings:**
+   ```bash
+   cat .claude/prp-memory/config.json
+   ```
+   Check `graphiti.enabled` - if false, skip to Phase 2.5.
+
+3. **Read architecture for group_id:**
+   ```bash
+   cat .claude/prp-memory/semantic/architecture.json
+   ```
+
+4. **Compute group_id from tech stack:**
+   ```
+   group_id = "{techStack.language}-{techStack.framework}" or "general" if not set
+   ```
+   Examples: `typescript-nextjs`, `python-fastapi`, `rust-axum`
+
+5. **Query Graphiti for relevant learnings:**
+
+   Use `search_facts` with:
+   - `query`: Current task description from plan
+   - `group_ids`: ["{computed_group_id}", "general"] (if includeGeneralGroup: true)
+   - `num_results`: config.graphiti.bootstrap.maxFacts (default: 10)
+
+   Also use `search_nodes` with:
+   - `query`: Keywords from acceptance criteria
+   - `group_ids`: ["{computed_group_id}", "general"]
+   - `num_results`: config.graphiti.bootstrap.maxNodes (default: 5)
+
+6. **Inject relevant results into working/context.json:**
+   Add to `relevantMemory`:
+   ```json
+   {
+     "graphitiLearnings": [
+       {
+         "source": "graphiti",
+         "type": "fact|node",
+         "content": "{fact or node summary}",
+         "relevance": "{why this is relevant}",
+         "group_id": "{source group_id}"
+       }
+     ]
+   }
+   ```
+
+7. **Display Graphiti bootstrap summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  GRAPHITI CROSS-PROJECT MEMORY                                  │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Group: {group_id}                                              │
+   │  Relevant facts: {N} loaded                                     │
+   │  Relevant nodes: {N} loaded                                     │
+   │  Total learnings: {N}                                           │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+   If learnings found, display them:
+   ```
+   📚 CROSS-PROJECT LEARNINGS:
+   - [{type}] {content}
+   ```
+
+8. **If Graphiti unavailable or query fails:**
+   Log warning and continue with local-only flow:
+   ```
+   Graphiti query failed - continuing with local memory only
+   ```
+   Do NOT fail the loop - graceful degradation.
+
+### 2.5 Discover Semantic Memory (First Run Only)
+
+Auto-detect project architecture on first run:
+
+1. **Check if semantic memory is populated:**
+   ```bash
+   cat .claude/prp-memory/semantic/architecture.json
+   ```
+   If `projectType` is null, run discovery.
+
+2. **Detect project type:**
+   ```bash
+   # Check for package.json
+   if [ -f "package.json" ]; then
+     # Check for Next.js
+     grep -q '"next"' package.json && echo "nextjs"
+     # Check for React
+     grep -q '"react"' package.json && echo "react"
+   elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+     echo "python"
+   elif [ -f "Cargo.toml" ]; then
+     echo "rust"
+   elif [ -f "go.mod" ]; then
+     echo "go"
+   fi
+   ```
+
+3. **Extract tech stack from config files:**
+   - Framework from package.json/requirements.txt
+   - Language (TypeScript/JavaScript/Python)
+   - Database from dependencies
+   - Test framework from devDependencies
+
+4. **Discover project structure:**
+   - Entry points (src/app/, src/index.ts, main.py)
+   - Component directories
+   - API routes
+   - Test directories
+
+5. **Write to semantic/architecture.json**
+
+6. **Log discovery:**
+   ```
+   Discovered project architecture:
+   - Type: {projectType}
+   - Framework: {framework}
+   - Language: {language}
+   ```
+
 **PHASE_2_CHECKPOINT:**
 - [ ] State file created
 - [ ] Archive directory exists
 - [ ] Startup message displayed
+- [ ] All memory directories exist (5 layers)
+- [ ] All JSON files initialized (9 files)
+- [ ] Working context compiled
+- [ ] Graphiti bootstrap attempted (if available)
+- [ ] Semantic memory discovered (first run only)
 
 ---
 
 ## Phase 3: EXECUTE - Work on Plan
+
+### 3.0 Failure Prevention Check (Memory System)
+
+**BEFORE implementing anything:**
+
+1. **Read failures.json:**
+   ```bash
+   cat .claude/prp-memory/procedural/failures.json
+   ```
+
+2. **Read patterns.json for known patterns:**
+   ```bash
+   cat .claude/prp-memory/procedural/patterns.json
+   ```
+
+3. **Check for similar patterns:**
+   - Compare planned approach with documented failures
+   - Check if similar files are affected
+   - Check if similar error messages occurred in the past
+   - Check `patterns.codePatterns` for applicable patterns
+
+4. **If failure match found - WARN:**
+   ```
+   ⚠️  SIMILAR APPROACH FAILED BEFORE
+
+   Failure ID: {id}
+   When: {timestamp}
+   Approach: {approach}
+   Files: {files}
+   Error: {errors}
+   Root Cause: {rootCause}
+
+   Prevention Tip: {prevention}
+   ```
+
+5. **Check successes.json for alternatives:**
+   ```bash
+   cat .claude/prp-memory/procedural/successes.json
+   ```
+
+   If a successful approach exists for a similar problem:
+   ```
+   ✅ SUCCESSFUL ALTERNATIVE EXISTS
+
+   Approach: {approach}
+   Why it worked: {whyItWorked}
+   Pattern: {pattern}
+   ```
+
+6. **Display applicable code patterns:**
+   If `patterns.codePatterns` has relevant entries:
+   ```
+   📋 KNOWN PATTERNS TO APPLY:
+   - {pattern.name}: {pattern.description}
+   ```
+
+### 3.0.5 Load Learned Rules
+
+Display applicable learned rules before implementation:
+
+1. **Read learned rules:**
+   ```bash
+   cat .claude/prp-memory/learned/rules.json
+   ```
+
+2. **Filter applicable rules:**
+   - Include rules where `active: true` (or no active field)
+   - Include rules where `applicability.always: true`
+   - Include rules where `applicability.filePatterns` overlap with current task files
+
+3. **Display if rules found:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  LEARNED RULES (from user corrections)                          │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Rule: {rule.rule}                                              │
+   │  Example: {rule.example}                                        │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+4. **Apply rules during implementation:**
+   - Reference rules when making relevant decisions
+   - Note rule application in progress log
 
 ### 3.1 Read Context First
 
@@ -181,7 +631,74 @@ For each incomplete task:
 3. Implement the change
 4. Run task-specific validation if specified
 
-### 3.4 Validate
+### 3.4 Write Tests (MANDATORY)
+
+**Before running validation, ensure tests exist for new code:**
+
+#### Unit Tests (ALWAYS required):
+1. Check if test files exist for new modules
+2. If NOT: write tests first
+3. Every new function needs at least one test
+4. Edge cases from the plan need test coverage
+
+**Unit test file patterns by language:**
+- Python: `tests/test_*.py` or `*_test.py`
+- JS/TS: `*.test.ts`, `*.spec.ts`, `__tests__/*.ts`
+- Java: `src/test/java/**/*Test.java`
+- Rust: `#[test]` in same file or `tests/` directory
+- Go: `*_test.go`
+
+#### E2E/Screen Tests (required for UI changes):
+1. Check if new UI components, pages, or user flows were created
+2. If YES: write E2E tests for the new UI
+3. If plan specifies E2E tests: write them regardless of change type
+
+**E2E test file patterns:**
+- Playwright: `tests/*.spec.ts`, `e2e/*.spec.ts`
+- Cypress: `cypress/e2e/*.cy.ts`, `cypress/e2e/*.cy.js`
+- Testing Library: `*.test.tsx` (component tests with user interactions)
+
+#### Performance Tests (required for performance-critical code):
+1. Check if performance-critical code was created/modified
+2. If YES: write performance tests/benchmarks
+3. If plan specifies performance requirements: write tests to verify them
+
+**Performance test patterns:**
+- k6: `k6/*.js`, `load-tests/*.js`
+- Locust: `locustfile.py`, `load_tests/*.py`
+- Benchmarks: `benchmarks/*.ts`, `*_bench_test.go`, `benches/*.rs`
+
+#### Integration Tests (required for API/DB/service interactions):
+1. Check if API endpoints, database interactions, or service integrations were created
+2. If YES: write integration tests
+3. Use Testcontainers for real database/service testing when possible
+
+**Integration test patterns:**
+- Node.js: `tests/integration/*.test.ts`, `__tests__/integration/*`
+- Python: `tests/integration/test_*.py`
+- Java: `src/test/java/**/integration/*IT.java`
+
+#### Security Tests (required for auth/input handling):
+1. Check if authentication, authorization, or user input handling was created
+2. If YES: run SAST scan and write security-focused tests
+3. Check dependencies for known vulnerabilities
+
+**Security test commands:**
+- `npx semgrep --config auto .` (SAST)
+- `npm audit` / `pip-audit` (dependency scan)
+- Write tests for auth bypass, injection, etc.
+
+#### Accessibility Tests (required for UI changes):
+1. Check if new UI components or pages were created
+2. If YES: run axe-core checks in tests
+3. Playwright example: `await expect(page).toHaveNoViolations()` (with @axe-core/playwright)
+
+**Accessibility test patterns:**
+- Playwright + axe: `tests/*.a11y.spec.ts`
+- Jest + axe: `*.a11y.test.tsx`
+- Pa11y CLI: `pa11y http://localhost:3000`
+
+### 3.5 Validate
 
 Run ALL validation commands from the plan:
 
@@ -193,7 +710,12 @@ bun test || npm test
 bun run build || npm run build
 ```
 
-### 3.5 Track Results
+**STRICT VALIDATION RULE:**
+- If `test` command returns "no tests found" or similar → FAIL
+- New code without tests = validation failure
+- Do NOT skip tests even if plan defers them to later phase
+
+### 3.6 Track Results
 
 | Check | Result | Notes |
 |-------|--------|-------|
@@ -202,21 +724,21 @@ bun run build || npm run build
 | Tests | PASS/FAIL | {details} |
 | Build | PASS/FAIL | {details} |
 
-### 3.6 If Any Validation Fails
+### 3.7 If Any Validation Fails
 
 1. Analyze the failure
 2. Fix the issue
 3. Re-run validation
 4. Repeat until passing
 
-### 3.7 Update Plan File
+### 3.8 Update Plan File
 
 After each significant change:
 - Mark completed tasks with checkboxes
 - Add notes about what was done
 - Document any deviations
 
-### 3.8 Update State File Progress Log
+### 3.9 Update State File Progress Log
 
 Append to Progress Log section using this format:
 
@@ -245,7 +767,7 @@ Append to Progress Log section using this format:
 ---
 ```
 
-### 3.9 Consolidate Codebase Patterns
+### 3.10 Consolidate Codebase Patterns
 
 If you discover a **reusable pattern**, add it to the "Codebase Patterns" section at the TOP of the state file:
 
@@ -259,6 +781,122 @@ If you discover a **reusable pattern**, add it to the "Codebase Patterns" sectio
 
 Only add patterns that are **general and reusable**, not iteration-specific.
 
+### 3.11 Record to Memory (After Validation)
+
+After EVERY validation (whether successful or not):
+
+#### On FAILED Validation:
+
+1. **Append to failures.json:**
+   ```json
+   {
+     "id": "fail-{YYYYMMDD}-{SEQ}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "plan": "{plan_path}",
+     "iteration": {iteration_number},
+     "approach": "{What was attempted - 1-2 sentences}",
+     "files": ["{Affected files}"],
+     "errors": ["{Exact error messages}"],
+     "rootCause": "{Analysis of WHY it failed}",
+     "prevention": "{How to avoid this in the future}",
+     "category": "{ssr-hydration|type-error|import|test|build|lint|other}"
+   }
+   ```
+
+2. **Record decision to episodic memory (decisions.json):**
+   ```json
+   {
+     "id": "dec-{YYYYMMDD}-{SEQ}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "feature": "{plan_path}",
+     "decision": "Attempted {approach}",
+     "rationale": "Based on {reasoning}",
+     "alternatives": [],
+     "impact": "{files}"
+   }
+   ```
+
+**IMPORTANT:**
+- `rootCause` must be a REAL analysis, not just repeating the error message
+- `prevention` must be ACTIONABLE
+- `category` helps with future pattern matching
+
+#### On SUCCESSFUL Validation:
+
+1. **Append to successes.json:**
+   ```json
+   {
+     "id": "suc-{YYYYMMDD}-{SEQ}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "plan": "{plan_path}",
+     "approach": "{What worked - 1-2 sentences}",
+     "files": ["{Affected files}"],
+     "whyItWorked": "{Why this approach was successful}",
+     "pattern": "{Reusable pattern for similar problems}",
+     "verificationResults": {
+       "build": "PASS|FAIL",
+       "tests": "PASS|FAIL ({X}/{Y})",
+       "lint": "PASS|FAIL",
+       "typecheck": "PASS|FAIL"
+     },
+     "lessons": ["{Key takeaways}"]
+   }
+   ```
+
+2. **Record decision to episodic memory (decisions.json):**
+   ```json
+   {
+     "id": "dec-{YYYYMMDD}-{SEQ}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "feature": "{plan_path}",
+     "decision": "Successfully used {approach}",
+     "rationale": "{Why this worked}",
+     "alternatives": ["{What was tried before}"],
+     "impact": "{files}"
+   }
+   ```
+
+3. **Prune episodic memory if > 50 entries:**
+   - Remove oldest entries (FIFO)
+   - Keep max 50 entries
+
+**IMPORTANT:**
+- Only document SIGNIFICANT successes (not every small fix)
+- `pattern` should be generalizable
+- `lessons` capture key insights for future reference
+
+### 3.12 Extract Patterns
+
+After successful validation, analyze for generalizable patterns:
+
+1. **Check if pattern already exists:**
+   ```bash
+   cat .claude/prp-memory/procedural/patterns.json
+   ```
+
+2. **Identify new patterns from success:**
+   - Code structures that can be reused
+   - Naming conventions discovered
+   - Project-specific rules observed
+
+3. **If new pattern detected, add to patterns.json:**
+   ```json
+   {
+     "id": "pattern-{YYYYMMDD}-{SEQ}",
+     "name": "{Pattern name}",
+     "description": "{What the pattern does}",
+     "example": "{Code example}",
+     "extractedFrom": "{success-id}",
+     "applicability": ["{keywords for matching}"]
+   }
+   ```
+
+4. **Update naming conventions if new convention detected:**
+   - Add to `patterns.namingConventions`
+
+5. **Update project-specific rules if applicable:**
+   - Add to `patterns.projectSpecificRules`
+
 **PHASE_3_CHECKPOINT:**
 - [ ] Context read (patterns, previous progress)
 - [ ] All tasks attempted
@@ -266,6 +904,9 @@ Only add patterns that are **general and reusable**, not iteration-specific.
 - [ ] Plan file updated
 - [ ] State file progress log updated
 - [ ] Patterns consolidated if discovered
+- [ ] Memory updated (failures or successes recorded)
+- [ ] Episodic decisions recorded
+- [ ] Patterns extracted (if successful)
 
 ---
 
@@ -380,6 +1021,213 @@ If validations are not all passing:
 
 **Do NOT output the completion promise if validations are failing.**
 
+### 4.4 Extract Learned Rules (Optional)
+
+If the user made corrections during the loop:
+
+1. **Identify the correction:**
+   - What did the user say?
+   - What was wrong with the original approach?
+
+2. **Generalize to a rule:**
+   - Not project-specific, but generally applicable
+   - Include a concrete example
+
+3. **Append to learned/rules.json:**
+   ```json
+   {
+     "id": "rule-{YYYYMMDD}-{SEQ}",
+     "timestamp": "{ISO-TIMESTAMP}",
+     "trigger": "{What triggered the correction}",
+     "rule": "{Generalized rule}",
+     "example": "{Concrete example: WRONG vs RIGHT}",
+     "source": "user-correction",
+     "confidence": "high|medium|low",
+     "active": true,
+     "applicability": {
+       "always": false,
+       "features": [],
+       "filePatterns": ["{patterns where rule applies}"]
+     }
+   }
+   ```
+
+4. **Update rules.json metadata:**
+   ```json
+   {
+     "lastUpdated": "{ISO-TIMESTAMP}",
+     "metadata": {
+       "totalRules": {N+1},
+       "projectSpecific": {count},
+       "general": {count},
+       "lastReflection": "{ISO-TIMESTAMP}"
+     }
+   }
+   ```
+
+**Detection triggers for user corrections:**
+- User says "Korrektur:", "Correction:", "Wrong:", "Falsch:"
+- User explicitly corrects an approach
+- User provides alternative that worked
+
+**Confidence levels:**
+- `high`: User explicitly stated the rule
+- `medium`: Rule inferred from correction
+- `low`: Pattern observed but not confirmed
+
+### 4.5 Update Semantic Memory
+
+After successful completion, update semantic memory with new discoveries:
+
+1. **Identify new entities created/modified:**
+   - Components, services, hooks, API routes
+   - Read files that were created during the loop
+
+2. **Update entities.json with new entities:**
+   ```json
+   {
+     "id": "entity-{YYYYMMDD}-{SEQ}",
+     "name": "{EntityName}",
+     "type": "{component|service|hook|api|test}",
+     "file": "{file path}",
+     "description": "{What it does}",
+     "dependencies": ["{imports}"],
+     "dependents": [],
+     "discoveredAt": "{ISO-TIMESTAMP}"
+   }
+   ```
+
+3. **Update architecture.json structure:**
+   - Add new entry points if discovered
+   - Add new component paths
+   - Add new API routes
+   - Add new test patterns
+
+4. **Update constraints.json if new constraints discovered:**
+   - Technical constraints (e.g., "must use edge runtime")
+   - Convention rules (e.g., "use server actions for forms")
+
+5. **Update lastUpdated timestamp in architecture.json**
+
+### 4.6 Graduate to Graphiti (Optional)
+
+After successful loop completion, graduate high-value learnings to cross-project memory:
+
+1. **Check Graphiti availability:**
+   ```
+   Use discover_tools_by_words("graphiti") to check if MCP tools exist.
+   ```
+
+   If no tools found:
+   ```
+   Graphiti not available - skipping graduation
+   ```
+   Continue to completion (no error).
+
+2. **Read config and architecture:**
+   ```bash
+   cat .claude/prp-memory/config.json
+   cat .claude/prp-memory/semantic/architecture.json
+   ```
+
+   Check `graphiti.enabled` - if false, skip graduation.
+   Compute `group_id` from tech stack (same as Phase 2.4.1).
+
+3. **Identify graduation candidates:**
+
+   **From learned/rules.json** (HIGH PRIORITY):
+   - Filter: `confidence` in ["high", "medium"] AND `active` = true
+   - Skip: entries with `graphitiHash` (already graduated)
+
+   **From procedural/successes.json** (HIGH PRIORITY):
+   - Filter: entries with non-empty `lessons` array (if `requireLessons: true`)
+   - Skip: entries with `graphitiHash`
+
+   **From procedural/failures.json** (MEDIUM PRIORITY):
+   - Filter: entries where same `category` appears >= `recurringFailureThreshold` times
+   - Skip: entries with `graphitiHash`
+
+   **From procedural/patterns.json** (MEDIUM PRIORITY):
+   - Filter: all patterns (they are pre-generalized)
+   - Skip: entries with `graphitiHash`
+
+4. **Graduate each candidate using add_episode:**
+
+   For learned rules:
+   ```json
+   {
+     "name": "learned-rule-{id}",
+     "episode_body": "{\"type\":\"learned_rule\",\"rule\":\"{rule}\",\"example\":\"{example}\",\"trigger\":\"{trigger}\",\"confidence\":\"{confidence}\",\"source_project\":\"{projectType from architecture}\"}",
+     "source": "json",
+     "source_description": "PRP Memory: Learned Rule",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For success patterns:
+   ```json
+   {
+     "name": "success-pattern-{id}",
+     "episode_body": "{\"type\":\"success_pattern\",\"approach\":\"{approach}\",\"pattern\":\"{pattern}\",\"whyItWorked\":\"{whyItWorked}\",\"lessons\":[\"{lessons}\"],\"files\":[\"{file patterns}\"]}",
+     "source": "json",
+     "source_description": "PRP Memory: Success Pattern",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For recurring failures:
+   ```json
+   {
+     "name": "failure-pattern-{category}",
+     "episode_body": "{\"type\":\"failure_pattern\",\"category\":\"{category}\",\"prevention\":\"{prevention}\",\"rootCause\":\"{common root cause}\",\"occurrences\":{count}}",
+     "source": "json",
+     "source_description": "PRP Memory: Failure Pattern (AVOID)",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+   For code patterns:
+   ```json
+   {
+     "name": "code-pattern-{id}",
+     "episode_body": "{\"type\":\"code_pattern\",\"name\":\"{name}\",\"description\":\"{description}\",\"example\":\"{example}\",\"applicability\":[\"{keywords}\"]}",
+     "source": "json",
+     "source_description": "PRP Memory: Code Pattern",
+     "group_id": "{computed_group_id}"
+   }
+   ```
+
+5. **Mark graduated entries:**
+   After successful add_episode, update local entry:
+   ```json
+   {
+     "graphitiHash": "{first 12 chars of SHA256 hash of content}",
+     "graduatedAt": "{ISO-TIMESTAMP}"
+   }
+   ```
+
+6. **Display graduation summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  GRADUATED TO GRAPHITI                                          │
+   ├─────────────────────────────────────────────────────────────────┤
+   │  Group: {group_id}                                              │
+   │  Learned rules: {N} graduated                                   │
+   │  Success patterns: {N} graduated                                │
+   │  Failure patterns: {N} graduated                                │
+   │  Code patterns: {N} graduated                                   │
+   │  Total: {N} entries                                             │
+   └─────────────────────────────────────────────────────────────────┘
+   ```
+
+7. **On graduation failure:**
+   Log warning but do NOT fail the loop:
+   ```
+   Warning: Graphiti graduation failed for {N} entries - continuing
+   Error: {error message}
+   ```
+   The loop should still complete successfully.
+
 ---
 
 ## Handling Edge Cases
@@ -449,4 +1297,5 @@ cat .claude/PRPs/ralph-archives/2024-01-12-feature-name/learnings.md
 - **LEARNINGS_CAPTURED**: Progress log has useful insights
 - **PATTERNS_CONSOLIDATED**: Reusable patterns extracted
 - **ARCHIVE_CREATED**: Full run archived for future reference
+- **GRAPHITI_GRADUATED**: High-value learnings promoted (if Graphiti available)
 - **CLEAN_EXIT**: Completion promise output only when genuinely complete
