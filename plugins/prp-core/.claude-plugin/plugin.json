@@ -1,6 +1,6 @@
 {
   "name": "prp-core",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Complete PRP (Product Requirement Prompt) workflow automation - plan, implement, debug, review, commit, and PR commands with Ralph autonomous loop",
   "author": {
     "name": "Wirasm",
