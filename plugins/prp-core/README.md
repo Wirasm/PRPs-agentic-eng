@@ -30,6 +30,40 @@ This plugin provides a comprehensive workflow for creating, executing, and shipp
 | `/prp-commit` | Smart commit with natural language file targeting |
 | `/prp-pr` | Create PR with template support |
 | `/prp-review` | Comprehensive PR code review |
+| `/prp-review-agents` | Multi-agent PR review (comments, tests, errors, types, code, docs, simplify) |
+
+## Agents
+
+Specialized agents for code analysis and review workflows.
+
+### Codebase Analysis
+
+| Agent | Description |
+|-------|-------------|
+| `codebase-analyst` | Documents HOW code works with file:line references |
+| `codebase-explorer` | Finds WHERE code lives AND extracts patterns |
+| `web-researcher` | Researches web for docs, APIs, best practices |
+
+### Review Workflow
+
+| Agent | Description |
+|-------|-------------|
+| `code-reviewer` | Project guidelines, bugs, type/module checks |
+| `comment-analyzer` | Comment accuracy and maintainability |
+| `pr-test-analyzer` | Test coverage quality and gaps |
+| `silent-failure-hunter` | Error handling and silent failures |
+| `type-design-analyzer` | Type encapsulation and invariants |
+| `code-simplifier` | Clarity and maintainability improvements |
+| `docs-impact-agent` | Updates stale documentation |
+
+### Using Agents
+
+Agents are invoked automatically by `/prp-review-agents` or manually via Task tool:
+
+```
+/prp-review-agents 123              # Full review of PR #123
+/prp-review-agents 123 tests errors # Specific aspects only
+```
 
 ## Workflow
 
