@@ -1,6 +1,7 @@
 ---
 name: codebase-explorer
 description: Comprehensive codebase exploration - finds WHERE code lives AND shows HOW it's implemented. Use when you need to locate files, understand directory structure, AND extract actual code patterns. Combines file finding with pattern extraction in one pass.
+capabilities: ["file-location", "pattern-extraction", "codebase-mapping"]
 model: sonnet
 color: green
 ---
