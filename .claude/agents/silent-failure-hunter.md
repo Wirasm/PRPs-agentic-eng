@@ -1,7 +1,6 @@
 ---
 name: silent-failure-hunter
 description: Hunts for silent failures, inadequate error handling, and inappropriate fallbacks in code changes. Zero tolerance for swallowed errors. Use after implementing error handling, catch blocks, or fallback logic. Ensures errors are logged, surfaced to users, and actionable.
-capabilities: ["error-handling-review", "silent-failure-detection", "logging-verification"]
 model: sonnet
 color: red
 ---
