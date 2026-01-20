@@ -1,6 +1,7 @@
 ---
 name: code-reviewer
 description: Reviews code for project guideline compliance, bugs, and quality issues. Use after writing code, before commits, or before PRs. Specify files to review or defaults to unstaged git changes. High-confidence issues only (80+) to minimize noise.
+capabilities: ["code-review", "bug-detection", "guideline-compliance"]
 model: opus
 color: green
 ---
