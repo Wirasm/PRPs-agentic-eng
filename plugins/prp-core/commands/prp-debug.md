@@ -110,6 +110,22 @@ WHY 5: Why does [intermediate cause D] happen?
 
 ### Investigation Techniques
 
+**For tracing complex code paths**, use `prp-core:codebase-analyst` to understand how the suspected code works before diving into the 5 Whys:
+
+Use Task tool with `subagent_type="prp-core:codebase-analyst"`:
+
+```
+Analyze the implementation around: [suspected area / error location]
+
+TRACE:
+1. How data flows through the affected code path
+2. Entry points that lead to the failure
+3. State changes and side effects along the way
+4. Contracts between components in the chain
+
+Document what exists with precise file:line references. No suggestions.
+```
+
 **For code issues:**
 - Grep for error messages, function names
 - Read full context around suspicious code

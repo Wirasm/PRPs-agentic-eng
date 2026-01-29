@@ -10,7 +10,12 @@ Transform "$ARGUMENTS" into a battle-tested implementation plan through systemat
 
 **Execution Order**: CODEBASE FIRST, RESEARCH SECOND. Solutions must fit existing patterns before introducing new ones.
 
-**Agent Strategy**: Use Task tool with subagent_type="Explore" for codebase intelligence gathering. This ensures thorough pattern discovery before any external research.
+**Agent Strategy**: Use specialized agents for intelligence gathering:
+- `prp-core:codebase-explorer` — finds WHERE code lives and extracts implementation patterns
+- `prp-core:codebase-analyst` — analyzes HOW integration points work and traces data flow
+- `prp-core:web-researcher` — strategic web research with citations and gap analysis
+
+Launch codebase agents in parallel first, then research agent second.
 </objective>
 
 <context>
@@ -116,28 +121,53 @@ So that <benefit/value>
 
 ## Phase 2: EXPLORE - Codebase Intelligence
 
-**CRITICAL: Use Task tool with subagent_type="Explore" and prompt for thoroughness="very thorough"**
+**CRITICAL: Launch two specialized agents in parallel using multiple Task tool calls in a single message.**
 
-Example Task invocation:
+### Agent 1: `prp-core:codebase-explorer`
+
+Finds WHERE code lives and extracts implementation patterns.
+
+Use Task tool with `subagent_type="prp-core:codebase-explorer"`:
 
 ```
-Explore the codebase to find patterns, conventions, and integration points
-relevant to implementing: [feature description].
+Find all code relevant to implementing: [feature description].
 
-DISCOVER:
-1. Similar implementations - find analogous features with file:line references
-2. Naming conventions - extract actual examples of function/class/file naming
+LOCATE:
+1. Similar implementations - analogous features with file:line references
+2. Naming conventions - actual examples of function/class/file naming
 3. Error handling patterns - how errors are created, thrown, caught
 4. Logging patterns - logger usage, message formats
 5. Type definitions - relevant interfaces and types
-6. Test patterns - test file structure, assertion styles
-7. Integration points - where new code connects to existing
+6. Test patterns - test file structure, assertion styles, test file locations
+7. Configuration - relevant config files and settings
 8. Dependencies - relevant libraries already in use
 
+Categorize findings by purpose (implementation, tests, config, types, docs).
 Return ACTUAL code snippets from codebase, not generic examples.
 ```
 
-**DOCUMENT discoveries in table format:**
+### Agent 2: `prp-core:codebase-analyst`
+
+Analyzes HOW integration points work and traces data flow.
+
+Use Task tool with `subagent_type="prp-core:codebase-analyst"`:
+
+```
+Analyze the implementation details relevant to: [feature description].
+
+TRACE:
+1. Entry points - where new code will connect to existing code
+2. Data flow - how data moves through related components
+3. State changes - side effects in related functions
+4. Contracts - interfaces and expectations between components
+5. Patterns in use - design patterns and architectural decisions
+
+Document what exists with precise file:line references. No suggestions or improvements.
+```
+
+### Merge Agent Results
+
+Combine findings from both agents into a unified discovery table:
 
 | Category | File:Lines                                  | Pattern Description  | Code Snippet                              |
 | -------- | ------------------------------------------- | -------------------- | ----------------------------------------- |
@@ -146,13 +176,14 @@ Return ACTUAL code snippets from codebase, not generic examples.
 | LOGGING  | `src/core/logging/index.ts:1-10`            | getLogger pattern    | `const logger = getLogger("domain")`      |
 | TESTS    | `src/features/X/tests/service.test.ts:1-30` | describe/it blocks   | `describe("service", () => {`             |
 | TYPES    | `src/features/X/models.ts:1-20`             | Drizzle inference    | `type Thing = typeof things.$inferSelect` |
+| FLOW     | `src/features/X/service.ts:40-60`           | Data transformation  | `input → validate → persist → respond`    |
 
 **PHASE_2_CHECKPOINT:**
 
-- [ ] Explore agent launched and completed successfully
+- [ ] Both agents (`prp-core:codebase-explorer` and `prp-core:codebase-analyst`) launched in parallel and completed
 - [ ] At least 3 similar implementations found with file:line refs
 - [ ] Code snippets are ACTUAL (copy-pasted from codebase, not invented)
-- [ ] Integration points mapped with specific file paths
+- [ ] Integration points mapped with data flow traces
 - [ ] Dependencies cataloged with versions from package.json
 
 ---
@@ -161,14 +192,29 @@ Return ACTUAL code snippets from codebase, not generic examples.
 
 **ONLY AFTER Phase 2 is complete** - solutions must fit existing codebase patterns first.
 
-**SEARCH for (use WebSearch tool):**
+**Use Task tool with `subagent_type="prp-core:web-researcher"`:**
 
-- Official documentation for involved libraries (match versions from package.json)
-- Known gotchas, breaking changes, deprecations
-- Security considerations and best practices
-- Performance optimization patterns
+```
+Research external documentation relevant to implementing: [feature description].
 
-**FORMAT references with specificity:**
+FIND:
+1. Official documentation for involved libraries (match versions from package.json: [list relevant deps and versions])
+2. Known gotchas, breaking changes, deprecations for these versions
+3. Security considerations and best practices
+4. Performance optimization patterns
+
+VERSION CONSTRAINTS:
+- [library]: v{version} (from package.json)
+- [library]: v{version}
+
+Return findings with:
+- Direct links to specific doc sections (not just homepages)
+- Key insights that affect implementation
+- Gotchas with mitigation strategies
+- Any conflicts between docs and existing codebase patterns found in Phase 2
+```
+
+**FORMAT the agent's findings into plan references:**
 
 ```markdown
 - [Library Docs v{version}](https://url#specific-section)
@@ -179,6 +225,7 @@ Return ACTUAL code snippets from codebase, not generic examples.
 
 **PHASE_3_CHECKPOINT:**
 
+- [ ] `prp-core:web-researcher` agent launched and completed
 - [ ] Documentation versions match package.json
 - [ ] URLs include specific section anchors (not just homepage)
 - [ ] Gotchas documented with mitigation strategies
@@ -245,7 +292,27 @@ Return ACTUAL code snippets from codebase, not generic examples.
 
 ## Phase 5: ARCHITECT - Strategic Design
 
-**ANALYZE deeply (use extended thinking if needed):**
+**For complex features with multiple integration points**, use `prp-core:codebase-analyst` to trace how existing architecture works at the integration points identified in Phase 2:
+
+Use Task tool with `subagent_type="prp-core:codebase-analyst"`:
+
+```
+Analyze the architecture around these integration points for: [feature description].
+
+INTEGRATION POINTS (from Phase 2):
+- [entry point 1 from explorer/analyst findings]
+- [entry point 2]
+
+ANALYZE:
+1. How data flows through each integration point
+2. What contracts exist between components
+3. What side effects occur at each stage
+4. What error handling patterns are in place
+
+Document what exists with precise file:line references. No suggestions.
+```
+
+**Then ANALYZE deeply (use extended thinking if needed):**
 
 - ARCHITECTURE_FIT: How does this integrate with the existing architecture?
 - EXECUTION_ORDER: What must happen first → second → third?
@@ -662,8 +729,8 @@ To start: `git worktree add -b phase-{X} ../project-phase-{X} && cd ../project-p
 - {K} total tasks
 
 **Key Patterns Discovered**:
-- {Pattern 1 from Explore agent with file:line}
-- {Pattern 2 from Explore agent with file:line}
+- {Pattern 1 from codebase-explorer/analyst with file:line}
+- {Pattern 2 from codebase-explorer/analyst with file:line}
 
 **External Research**:
 - {Key doc 1 with version}
@@ -689,7 +756,7 @@ To start: `git worktree add -b phase-{X} ../project-phase-{X} && cd ../project-p
 
 **CONTEXT_COMPLETENESS:**
 
-- [ ] All patterns from Explore agent documented with file:line references
+- [ ] All patterns from `prp-core:codebase-explorer` and `prp-core:codebase-analyst` documented with file:line references
 - [ ] External docs versioned to match package.json
 - [ ] Integration points mapped with specific file paths
 - [ ] Gotchas captured with mitigation strategies
@@ -726,7 +793,7 @@ To start: `git worktree add -b phase-{X} ../project-phase-{X} && cd ../project-p
 </verification>
 
 <success_criteria>
-**CONTEXT_COMPLETE**: All patterns, gotchas, integration points documented from actual codebase via Explore agent
+**CONTEXT_COMPLETE**: All patterns, gotchas, integration points documented from actual codebase via `prp-core:codebase-explorer` and `prp-core:codebase-analyst` agents
 **IMPLEMENTATION_READY**: Tasks executable top-to-bottom without questions, research, or clarification
 **PATTERN_FAITHFUL**: Every new file mirrors existing codebase style exactly
 **VALIDATION_DEFINED**: Every task has executable verification command

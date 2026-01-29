@@ -70,18 +70,34 @@ Ask these questions (present all at once, user can answer together):
 
 ## Phase 3: GROUNDING - Market & Context Research
 
-After foundation answers, conduct research:
+After foundation answers, conduct research using specialized agents:
 
-**Use WebSearch to discover:**
-- Similar products/features in the market
-- How competitors solve this problem
-- Common patterns and anti-patterns
-- Recent trends or changes in this space
+**Use Task tool with `subagent_type="prp-core:web-researcher"`:**
 
-**Use Explore agent (if codebase exists) to find:**
-- Related existing functionality
-- Patterns that could be leveraged
-- Technical constraints or opportunities
+```
+Research the market context for: {product/feature idea}
+
+FIND:
+1. Similar products/features in the market
+2. How competitors solve this problem
+3. Common patterns and anti-patterns
+4. Recent trends or changes in this space
+
+Return findings with direct links, key insights, and any gaps in available information.
+```
+
+**If codebase exists, use Task tool with `subagent_type="prp-core:codebase-explorer"`:**
+
+```
+Find existing functionality relevant to: {product/feature idea}
+
+LOCATE:
+1. Related existing functionality
+2. Patterns that could be leveraged
+3. Technical constraints or opportunities
+
+Return file locations, code patterns, and conventions observed.
+```
 
 **Summarize findings to user:**
 
@@ -118,23 +134,48 @@ Based on foundation + research, ask:
 
 ## Phase 5: GROUNDING - Technical Feasibility
 
-**If codebase exists, use Explore agent:**
+**If codebase exists, launch two agents in parallel:**
+
+Use Task tool with `subagent_type="prp-core:codebase-explorer"`:
 
 ```
-Explore the codebase to assess feasibility for: {product/feature}
+Assess technical feasibility for: {product/feature}
 
-DISCOVER:
+LOCATE:
 1. Existing infrastructure we can leverage
-2. Technical constraints or blockers
-3. Similar patterns already implemented
-4. Integration points and dependencies
-5. Estimated complexity based on similar features
+2. Similar patterns already implemented
+3. Integration points and dependencies
+4. Relevant configuration and type definitions
+
+Return file locations, code patterns, and conventions observed.
 ```
 
-**If no codebase, use WebSearch for:**
-- Technical approaches others have used
-- Common implementation patterns
-- Known technical challenges
+Use Task tool with `subagent_type="prp-core:codebase-analyst"`:
+
+```
+Analyze technical constraints for: {product/feature}
+
+TRACE:
+1. How existing related features are implemented end-to-end
+2. Data flow through potential integration points
+3. Architectural patterns and boundaries
+4. Estimated complexity based on similar features
+
+Document what exists with precise file:line references. No suggestions.
+```
+
+**If no codebase, use Task tool with `subagent_type="prp-core:web-researcher"`:**
+
+```
+Research technical approaches for: {product/feature}
+
+FIND:
+1. Technical approaches others have used
+2. Common implementation patterns
+3. Known technical challenges and pitfalls
+
+Return findings with citations and gap analysis.
+```
 
 **Summarize to user:**
 

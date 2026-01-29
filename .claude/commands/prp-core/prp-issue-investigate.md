@@ -112,30 +112,52 @@ Each assessment requires a **one-sentence reasoning** explaining WHY you chose t
 
 ## Phase 2: EXPLORE - Codebase Intelligence
 
-### 2.1 Search for Relevant Code
+**CRITICAL: Launch two specialized agents in parallel using multiple Task tool calls in a single message.**
 
-Use Task tool with subagent_type="Explore":
+### 2.1 Agent 1: `prp-core:codebase-explorer`
+
+Finds WHERE relevant code lives and extracts patterns to mirror.
+
+Use Task tool with `subagent_type="prp-core:codebase-explorer"`:
 
 ```
-Explore the codebase to understand the issue:
+Find all code relevant to this issue:
 
 ISSUE: {title/description}
 
-DISCOVER:
+LOCATE:
 1. Files directly related to this functionality
-2. How the current implementation works
-3. Integration points - what calls this, what it calls
-4. Similar patterns elsewhere to mirror
-5. Existing test patterns for this area
-6. Error handling patterns used
+2. Similar patterns elsewhere to mirror
+3. Existing test patterns for this area
+4. Error handling patterns used
+5. Configuration and type definitions
 
-Return:
-- File paths with specific line numbers
-- Actual code snippets (not summaries)
-- Dependencies and data flow
+Categorize findings by purpose (implementation, tests, config, types, docs).
+Return ACTUAL code snippets from codebase, not generic examples.
 ```
 
-### 2.2 Document Findings
+### 2.2 Agent 2: `prp-core:codebase-analyst`
+
+Analyzes HOW the affected code works and traces data flow for root cause analysis.
+
+Use Task tool with `subagent_type="prp-core:codebase-analyst"`:
+
+```
+Analyze the implementation details related to this issue:
+
+ISSUE: {title/description}
+
+TRACE:
+1. How the current implementation works end-to-end
+2. Integration points - what calls this, what it calls
+3. Data flow through the affected components
+4. State changes and side effects
+5. Error handling and edge case behavior
+
+Document what exists with precise file:line references. No suggestions.
+```
+
+### 2.3 Merge and Document Findings
 
 | Area       | File:Lines            | Notes                  |
 | ---------- | --------------------- | ---------------------- |
@@ -144,12 +166,13 @@ Return:
 | Types      | `src/types/x.ts:5-15` | Relevant interfaces    |
 | Tests      | `src/x.test.ts:1-100` | Existing test patterns |
 | Similar    | `src/z.ts:40-60`      | Pattern to mirror      |
+| Flow       | `src/x.ts:10→y.ts:20` | Data transformation    |
 
 **PHASE_2_CHECKPOINT:**
 
-- [ ] Explore agent completed successfully
+- [ ] Both agents (`prp-core:codebase-explorer` and `prp-core:codebase-analyst`) launched in parallel and completed
 - [ ] Core files identified with line numbers
-- [ ] Integration points mapped
+- [ ] Integration points mapped with data flow traces
 - [ ] Similar patterns found to mirror
 - [ ] Test patterns documented
 
