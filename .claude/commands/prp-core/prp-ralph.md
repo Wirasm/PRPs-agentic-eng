@@ -259,6 +259,47 @@ If you discover a **reusable pattern**, add it to the "Codebase Patterns" sectio
 
 Only add patterns that are **general and reusable**, not iteration-specific.
 
+### 3.10 Save Iteration Learnings to Graphiti
+
+**At EVERY iteration**, save new learnings to project memory. Don't wait until the end!
+
+```
+If you discovered something new this iteration:
+  add_memory(
+    name: "{concise learning title}",
+    episode_body: "{what you learned, include versions for tech}",
+    source_description: "PRP-Ralph iteration {N} - {plan_name}",
+    group_id: "{project_group_id}"  # ALWAYS use project during loop, NEVER main!
+  )
+```
+
+**CRITICAL: During the loop, ALWAYS use `project_group_id`, NEVER `main`!**
+
+- `main` requires confirmation dialogs → slows down the loop
+- Save everything to project first → promote to main only at the END (Phase 4)
+- The project group_id is shown in the hook message (e.g., "Milofax/graphiti-influxer")
+
+**Handling Graphiti Hook Dialogs**
+
+If a hook asks for confirmation, DO NOT GIVE UP:
+
+1. Hook asks "Wohin speichern?" → Use the project group_id from the message, retry
+2. Hook asks about version/citation → **REPEAT the exact same call** to skip warning
+
+**NEVER skip saving because of a hook dialog. Always retry until it passes.**
+
+**Save immediately when you discover:**
+- Why a validation failed (and how you fixed it)
+- A gotcha in this codebase
+- A pattern that works here
+- A decision you made and why
+
+**Don't save:**
+- Things you already saved in previous iterations
+- Generic knowledge (save that to main at the END if loop succeeds)
+
+This ensures learnings survive even if the loop is cancelled or hits max iterations.
+
 **PHASE_3_CHECKPOINT:**
 - [ ] Context read (patterns, previous progress)
 - [ ] All tasks attempted
@@ -266,6 +307,7 @@ Only add patterns that are **general and reusable**, not iteration-specific.
 - [ ] Plan file updated
 - [ ] State file progress log updated
 - [ ] Patterns consolidated if discovered
+- [ ] New learnings saved to Graphiti
 
 ---
 
@@ -352,20 +394,74 @@ ALL of these must be true:
    - {Pattern that should be permanent}
    ```
 
-4. **Archive Plan to Completed**
+4. **Promote General Learnings to Main (if any)**
+
+   Project-specific learnings were already saved during iterations (3.10).
+
+   Now review: Are there any **general, transferable** insights worth promoting to permanent memory?
+
+   **Promote to main ONLY if:**
+   - Applies to ANY project using this framework/tool
+   - Would help future-you in a different codebase
+   - Is a general pattern, not project-specific
+
+   ```
+   # Example - promoting a general insight:
+   add_memory(
+     name: "React 18 Suspense requirement",
+     episode_body: "React 18: concurrent features require Suspense boundaries at data fetch points",
+     source_description: "PRP-Ralph {plan_name}",
+     group_id: "main"
+   )
+   ```
+
+   **Include version info for technical learnings!**
+
+   **Do NOT promote:**
+   - Project-specific architecture (already in project_group_id)
+   - Things specific to this codebase's structure
+   - Learnings that only make sense with this project's context
+
+5. **Update Source PRD Status (if applicable)**
+
+   If this plan was created from a PRD phase, update the PRD status:
+
+   1. **Find the source PRD** by checking:
+      - Plan file comments mentioning PRD path
+      - `.claude/PRPs/prds/` directory for matching project PRD
+      - State file `input_type` field (if `prd`, the PRD path was recorded)
+
+   2. **If PRD exists with this phase**, edit the PRD file:
+      - Find the Implementation Phases table
+      - Locate the row matching this plan's phase
+      - Change Status from `in-progress` to `**complete**`
+      - Update PRP Plan column path if plan moved to `completed/`
+
+   **Example edit:**
+   ```markdown
+   # Before:
+   | 2 | Batch & Polish | ... | **in-progress** | - | 1 | [plan.md](../plans/plan.md) |
+
+   # After:
+   | 2 | Batch & Polish | ... | **complete** | - | 1 | [plan.md](../plans/completed/plan.md) |
+   ```
+
+   **CRITICAL**: Without this step, the PRD shows stale status and `/prp-plan` cannot identify the next plannable phase correctly.
+
+6. **Archive Plan to Completed**
 
    ```bash
    mkdir -p .claude/PRPs/plans/completed
    mv {plan_path} .claude/PRPs/plans/completed/
    ```
 
-5. **Clean Up State**
+7. **Clean Up State**
 
    ```bash
    rm .claude/prp-ralph.state.md
    ```
 
-6. **Output Completion Promise**
+8. **Output Completion Promise**
 
    ```
    <promise>COMPLETE</promise>
@@ -448,5 +544,7 @@ cat .claude/PRPs/ralph-archives/2024-01-12-feature-name/learnings.md
 - **REPORT_GENERATED**: Implementation report created
 - **LEARNINGS_CAPTURED**: Progress log has useful insights
 - **PATTERNS_CONSOLIDATED**: Reusable patterns extracted
+- **GRAPHITI_SAVED**: Transferable learnings saved to long-term memory
+- **PRD_UPDATED**: Source PRD status changed to complete (if applicable)
 - **ARCHIVE_CREATED**: Full run archived for future reference
 - **CLEAN_EXIT**: Completion promise output only when genuinely complete
