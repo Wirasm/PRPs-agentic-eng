@@ -23,6 +23,12 @@ This plugin provides a comprehensive workflow for creating, executing, and shipp
 | `/prp-issue-investigate` | Analyze GitHub issue, create implementation plan |
 | `/prp-issue-fix` | Execute fix from investigation artifact |
 
+### Research
+
+| Command | Description |
+|---------|-------------|
+| `/prp-research-team` | Design dynamic research team and plan using agent teams |
+
 ### Git & Review
 
 | Command | Description |
