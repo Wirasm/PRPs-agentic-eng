@@ -1,11 +1,11 @@
 ---
 description: Create a PR from current branch with unpushed commits
-argument-hint: [base-branch] (default: main)
+argument-hint: [--base <branch>] (default: auto-detected)
 ---
 
 # Create Pull Request
 
-**Base branch**: $ARGUMENTS (default: main)
+**Base branch override**: $ARGUMENTS
 
 ---
 
@@ -17,28 +17,49 @@ Create a well-formatted pull request from the current branch, using repository P
 
 ---
 
+## Phase 0: DETECT - Base Branch
+
+### 0.1 Detect Base Branch
+
+Determine the base branch for PR target and diff comparison:
+
+1. **Check arguments**: If `$ARGUMENTS` contains a branch name or `--base <branch>`, use that value
+2. **Auto-detect from remote**:
+   ```bash
+   git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'
+   ```
+3. **Fallback if detection fails**:
+   ```bash
+   git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}'
+   ```
+4. **Last resort**: `main`
+
+**Store as `{base-branch}`** — use this value for ALL comparisons, diff commands, and PR creation. Never hardcode `main` or `master`.
+
+---
+
 ## Phase 1: VALIDATE - Check Prerequisites
 
 ### 1.1 Verify Git State
 
 ```bash
-# Current branch (must not be main/master)
+# Current branch (must not be {base-branch})
 git branch --show-current
 
 # Check for uncommitted changes
 git status --short
 
 # Verify we have commits to PR
-git log origin/main..HEAD --oneline
+git log origin/{base-branch}..HEAD --oneline
 ```
 
 **Decision Tree:**
 
 | State | Action |
 |-------|--------|
-| On main/master | STOP: "Cannot create PR from main. Create a feature branch first." |
+| On {base-branch} | STOP: "Cannot create PR from {base-branch}. Create a feature branch first." |
 | Uncommitted changes | WARN: "You have uncommitted changes. Commit or stash before creating PR." |
-| No commits ahead | STOP: "No commits to create PR from. Branch is up to date with main." |
+| No commits ahead | STOP: "No commits to create PR from. Branch is up to date with {base-branch}." |
 | Has commits, clean | PROCEED |
 
 ### 1.2 Check for Existing PR
@@ -54,7 +75,7 @@ Use `gh pr view` to see details or `gh pr edit` to modify.
 ```
 
 **PHASE_1_CHECKPOINT:**
-- [ ] Not on main/master branch
+- [ ] Not on {base-branch}
 - [ ] Working directory is clean (or user acknowledged)
 - [ ] Has commits ahead of base branch
 - [ ] No existing PR for this branch
@@ -85,20 +106,20 @@ ls -la docs/pull_request_template.md 2>/dev/null
 
 ```bash
 # Get commit messages for PR body
-git log origin/main..HEAD --pretty=format:"- %s"
+git log origin/{base-branch}..HEAD --pretty=format:"- %s"
 
 # Get detailed commit info
-git log origin/main..HEAD --pretty=format:"%h %s%n%b" --no-merges
+git log origin/{base-branch}..HEAD --pretty=format:"%h %s%n%b" --no-merges
 ```
 
 ### 2.3 Analyze Changed Files
 
 ```bash
 # Files changed
-git diff --stat origin/main..HEAD
+git diff --stat origin/{base-branch}..HEAD
 
 # Get list of changed files
-git diff --name-only origin/main..HEAD
+git diff --name-only origin/{base-branch}..HEAD
 ```
 
 ### 2.4 Determine PR Title
@@ -272,12 +293,12 @@ gh pr checks
 
 ## Handling Edge Cases
 
-### Branch has diverged from main
+### Branch has diverged from {base-branch}
 
 ```bash
 # Suggest rebasing first
 git fetch origin
-git rebase origin/main
+git rebase origin/{base-branch}
 # Then push with lease
 git push --force-with-lease
 ```

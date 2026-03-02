@@ -1,6 +1,6 @@
 ---
 description: Implement a fix from investigation artifact - code changes, PR, and self-review
-argument-hint: <issue-number|artifact-path>
+argument-hint: <issue-number|artifact-path> [--base <branch>]
 ---
 
 # Implement Issue
@@ -22,6 +22,27 @@ Execute the implementation plan from `/prp-issue-investigate`:
 7. Archive the artifact
 
 **Golden Rule**: Follow the artifact. If something seems wrong, validate it first - don't silently deviate.
+
+---
+
+## Phase 0: DETECT - Base Branch
+
+### 0.1 Detect Base Branch
+
+Determine the base branch for branching, syncing, and PR creation:
+
+1. **Check arguments**: If `$ARGUMENTS` contains `--base <branch>`, extract that value and remove the flag from the remaining arguments
+2. **Auto-detect from remote**:
+   ```bash
+   git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'
+   ```
+3. **Fallback if detection fails**:
+   ```bash
+   git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}'
+   ```
+4. **Last resort**: `main`
+
+**Store as `{base-branch}`** — use this value for ALL branch comparisons, rebasing, syncing, and PR creation. Never hardcode `main` or `master`.
 
 ---
 
@@ -146,7 +167,7 @@ git status
 │  └─ YES → Use it (assume it's for this work)
 │           Log: "Using worktree at {path}"
 │
-├─ ON MAIN/MASTER?
+├─ ON {base-branch}?
 │  └─ Q: Working directory clean?
 │     ├─ YES → Create branch: fix/issue-{number}-{slug}
 │     │        git checkout -b fix/issue-{number}-{slug}
@@ -169,14 +190,14 @@ git status
 
 ```bash
 # If branch tracks remote
-git pull --rebase origin main 2>/dev/null || git pull origin main
+git pull --rebase origin {base-branch} 2>/dev/null || git pull origin {base-branch}
 ```
 
 **PHASE_3_CHECKPOINT:**
 
 - [ ] Git state is clean and correct
 - [ ] On appropriate branch (created or existing)
-- [ ] Up to date with main
+- [ ] Up to date with {base-branch}
 
 ---
 
@@ -290,7 +311,8 @@ Execute any manual verification steps from the artifact.
 ### 6.1 Stage Changes
 
 ```bash
-git add -A
+# Stage specific changed files (prefer over git add -A)
+git add {list of changed files}
 git status  # Review what's being committed
 ```
 
@@ -352,7 +374,7 @@ git push -u origin HEAD --force-with-lease
 ### 7.2 Create PR
 
 ````bash
-gh pr create --title "Fix: {title} (#{number})" --body "$(cat <<'EOF'
+gh pr create --base "{base-branch}" --title "Fix: {title} (#{number})" --body "$(cat <<'EOF'
 ## Summary
 
 {Problem statement from artifact}

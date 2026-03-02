@@ -1,6 +1,6 @@
 ---
 description: Execute an implementation plan with rigorous validation loops
-argument-hint: <path/to/plan.md>
+argument-hint: <path/to/plan.md> [--base <branch>]
 ---
 
 # Implement Plan
@@ -37,7 +37,24 @@ Check for these files to determine the project's toolchain:
 
 **Store the detected runner** - use it for all subsequent commands.
 
-### 0.2 Identify Validation Scripts
+### 0.2 Detect Base Branch
+
+Determine the base branch for branching and syncing:
+
+1. **Check arguments**: If `$ARGUMENTS` contains `--base <branch>`, extract that value and remove the flag from the plan path argument
+2. **Auto-detect from remote**:
+   ```bash
+   git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'
+   ```
+3. **Fallback if detection fails**:
+   ```bash
+   git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}'
+   ```
+4. **Last resort**: `main`
+
+**Store as `{base-branch}`** — use this value for ALL branch comparisons, rebasing, and syncing. Never hardcode `main` or `master`.
+
+### 0.3 Identify Validation Scripts
 
 Check `package.json` (or equivalent) for available scripts:
 - Type checking: `type-check`, `typecheck`, `tsc`
@@ -98,23 +115,23 @@ git worktree list
 
 ### 2.2 Branch Decision
 
-| Current State     | Action                                               |
-| ----------------- | ---------------------------------------------------- |
-| In worktree       | Use it (log: "Using worktree")                       |
-| On main, clean    | Create branch: `git checkout -b feature/{plan-slug}` |
-| On main, dirty    | STOP: "Stash or commit changes first"                |
-| On feature branch | Use it (log: "Using existing branch")                |
+| Current State              | Action                                               |
+| -------------------------- | ---------------------------------------------------- |
+| In worktree                | Use it (log: "Using worktree")                       |
+| On {base-branch}, clean    | Create branch: `git checkout -b feature/{plan-slug}` |
+| On {base-branch}, dirty    | STOP: "Stash or commit changes first"                |
+| On feature branch          | Use it (log: "Using existing branch")                |
 
 ### 2.3 Sync with Remote
 
 ```bash
 git fetch origin
-git pull --rebase origin main 2>/dev/null || true
+git pull --rebase origin {base-branch} 2>/dev/null || true
 ```
 
 **PHASE_2_CHECKPOINT:**
 
-- [ ] On correct branch (not main with uncommitted work)
+- [ ] On correct branch (not {base-branch} with uncommitted work)
 - [ ] Working directory ready
 - [ ] Up to date with remote
 
