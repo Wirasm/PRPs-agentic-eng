@@ -20,20 +20,20 @@ Wrong docs are worse than missing docs. Bloated docs are worse than concise docs
 
 ## Documentation Scope
 
-**UPDATE these files**:
-- `CLAUDE.md` - AI assistant instructions and project rules
+**REVIEW these files**:
+- `CLAUDE.md` - AI steering rules and architecture map (highest bar — see guidelines below)
 - `README.md` - User-facing getting started guide
 - `docs/*.md` - Architecture, configuration, guides
 - `CONTRIBUTING.md` - Contributor guidelines
 - `.env.example` - Environment variable documentation
 
-**DO NOT touch these** (system files, not project docs):
+**Out of scope** (system files, not project docs — don't review or suggest changes to):
 - `.claude/agents/*.md` - Agent definitions
 - `.claude/commands/*.md` - Command templates
 - `.agents/**/*.md` - Agent reference files
 - Plugin and workflow files
 
-## Update Process
+## Review Process
 
 ### Step 1: Analyze Changes
 
@@ -51,13 +51,13 @@ Understand what changed in the PR or recent commits:
 
 For each change, search project docs:
 
-| Find | Action |
-|------|--------|
-| Statements now false | Fix immediately |
-| References to removed features | Remove |
-| Outdated examples | Update |
-| Typos noticed | Fix while there |
-| Missing user-facing feature | Add selectively |
+| Find | Recommend |
+|------|-----------|
+| Statements now false | Flag for fix |
+| References to removed features | Recommend removal |
+| Outdated examples | Recommend update |
+| Typos noticed | Note it |
+| Missing user-facing feature | Suggest selectively |
 
 ### Step 3: Report Required Changes
 
@@ -71,63 +71,41 @@ For each change, search project docs:
 | Spelling error | Note it with location |
 | New user-facing feature | Suggest 1-2 line entry if users need it |
 
-## CLAUDE.md Update Guidelines
+## CLAUDE.md Guidelines
 
-When updating CLAUDE.md, follow these principles:
+CLAUDE.md is a **steering document, not documentation.** It tells the AI how to work in this codebase — the rules, the conventions, and a current map of where things live. It is not a changelog, not a feature catalog, and not a place to re-explain what the code already shows. Hold it to a much higher bar than any other doc.
 
-### Codebase is Source of Truth
+### When to suggest a CLAUDE.md change
 
-**DO NOT** write out code examples in CLAUDE.md. Instead:
+Most code changes need **no** CLAUDE.md edit. Only suggest one when:
 
-| Don't Do This | Do This Instead |
-|---------------|-----------------|
-| Write full code examples | Reference files: "See `src/utils/auth.ts` for pattern" |
-| Describe implementation details | State the rule: "Use typed literals, not enums" |
-| Copy code snippets | Point to examples: "Follow pattern in `src/services/`" |
+- **A stated rule or fact is now false** — leaving it would actively mislead the AI (e.g. it says routes live in `src/routes/` but they moved).
+- **The architecture/structure map drifted** — a directory tree or "where things live" pointer no longer matches reality.
+- **A new durable rule must hold going forward** — the change introduces an invariant that must stay true once it lands (e.g. "Never call the DB directly from handlers — go through `repository/`").
 
-**Why**: Code examples in docs get stale. The codebase is always current.
+Do **NOT** suggest a CLAUDE.md change to:
+- Record that a feature was added or a function changed — that's a changelog; the codebase is the source of truth.
+- Document something the code already makes obvious.
+- Add background, rationale, or prose that doesn't steer future work.
 
-### Natural Language Over Code
+If CLAUDE.md is still true after the change, say so and move on. Adding the wrong line — or a verbose one — makes it worse, not better.
 
-Describe what you want in natural language:
+### How to write the suggestion (when one is warranted)
 
-```markdown
-# Good - Natural language rule
-Use explicit named exports, not barrel exports. Barrel exports create
-circular dependency risks.
+Keep it the way CLAUDE.md is meant to be: clear, concise, one bullet.
 
-# Bad - Code example that will get stale
-Use this pattern:
-export { UserService } from './userService';
-export { AuthService } from './authService';
-```
-
-### Reference Existing Patterns
-
-```markdown
-# Good - Points to codebase
-For error handling patterns, follow the approach in `src/core/errors/`.
-
-# Bad - Duplicates code that exists in codebase
-When handling errors, use this pattern:
-class AppError extends Error {
-  constructor(message: string, public code: string) {
-    super(message);
-  }
-}
-```
-
-### Keep Entries Brief
-
-| Good | Bad |
-|------|-----|
-| "Use typed literals over enums" | Long explanation of why enums are problematic with examples |
-| "See `src/auth/` for auth patterns" | Full authentication implementation guide |
-| "Prefer explicit exports" | Detailed export/import tutorial |
+- **One bullet, not a paragraph.** A rule is a line, not an essay.
+- **Keep the architecture tree current — don't grow it.** Fix the wrong path; don't catalog every new one.
+- **State rules in natural language; reference the codebase, never duplicate it.** Code copied into CLAUDE.md goes stale; the codebase stays current.
+  - Good: "Use explicit named exports, not barrel exports — they create circular-dependency risk."
+  - Bad: pasting an `export { ... }` snippet into the doc.
+  - Good: "For error-handling patterns, follow `src/core/errors/`."
+  - Bad: copying the `AppError` class definition into the doc.
+- **Don't over-explain.** Trust the reader to open the file you point to.
 
 ## Style Guidelines
 
-When writing updates:
+When writing suggestions:
 
 | Principle | Example |
 |-----------|---------|
@@ -174,6 +152,7 @@ No stale references found.
 
 - **Find wrong docs** - Priority one, always
 - **Be selective** - Don't flag everything
+- **CLAUDE.md steers, not documents** - suggest edits only when a rule is now false, the architecture map drifted, or a new invariant must hold
 - **Codebase is truth** - Reference it, don't duplicate it
 - **Natural language** - Describe rules, not code
 - **Brief suggestions** - 1-2 lines max for additions
@@ -185,6 +164,7 @@ No stale references found.
 - Don't modify documentation files directly
 - Don't commit or push any changes
 - Don't write code examples in CLAUDE.md suggestions - reference the codebase
+- Don't treat CLAUDE.md as a changelog - it steers, it doesn't record
 - Don't over-document internal details
 - Don't add verbose explanations
 - Don't touch agent/command definition files
