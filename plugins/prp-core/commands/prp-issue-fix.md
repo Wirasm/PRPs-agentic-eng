@@ -448,9 +448,11 @@ PR_NUMBER=$(gh pr view --json number -q '.number')
 
 ## Phase 8: REVIEW - Self Code Review
 
-### 8.1 Run Code Review
+### 8.1 Run Self-Review Agents (in parallel)
 
-Use Task tool with subagent_type="code-reviewer":
+Launch both agents in a **single message with two Task tool calls** so they run concurrently. Both are advisory and read the same diff — there is no reason to serialize them.
+
+**code-reviewer** (subagent_type="code-reviewer"):
 
 ```
 Review the changes in this PR for issue #{number}.
@@ -464,6 +466,14 @@ Focus on:
 6. Potential bugs - anything that could break?
 
 Review only the diff, not the entire codebase.
+```
+
+**code-simplifier** (subagent_type="code-simplifier"):
+
+```
+Identify simplification opportunities in the changes for issue #{number}.
+Focus only on the diff. Prefer explicit over clever; no nested ternaries.
+Report findings with before/after suggestions. Advisory only — do not modify files or commit.
 ```
 
 ### 8.2 Post Review to PR
@@ -486,6 +496,9 @@ gh pr comment --body "$(cat <<'EOF'
 - `{file}:{line}` - {suggestion}
 - {other suggestions}
 
+#### 🧹 Simplification (from code-simplifier)
+- `{file}:{line}` - {simplification, or "No simplifications identified"}
+
 #### 🔒 Security
 - {Any concerns or "No security concerns identified"}
 
@@ -504,7 +517,7 @@ EOF
 
 **PHASE_8_CHECKPOINT:**
 
-- [ ] Code review completed
+- [ ] Code review + simplification completed (run in parallel)
 - [ ] Review posted to PR
 
 ---

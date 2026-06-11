@@ -38,7 +38,7 @@ Before running reviews:
 | `comments` | comment-analyzer | When comments/docstrings added |
 | `errors` | silent-failure-hunter | When error handling changed |
 | `types` | type-design-analyzer | When types added/modified |
-| `simplify` | code-simplifier | After passing review - polish |
+| `simplify` | code-simplifier | When `all` or `simplify` requested - advisory polish |
 | `all` | All applicable | Default if no aspects specified |
 
 ## Aspect Selection Logic
@@ -61,23 +61,32 @@ Before running reviews:
 - Try-catch or error handling → `silent-failure-hunter`
 - New types or type modifications → `type-design-analyzer`
 
-**Run last**:
-- `code-simplifier` - After other reviews pass
+**Include when in scope** (`all` or `simplify` requested):
+- `code-simplifier` - Advisory polish; runs in the same parallel batch as the others
 
 ## Execution
 
-### Sequential (Default)
+Run in two steps: **decide which agents apply, then dispatch them in parallel.**
 
-Run agents one at a time for clear, actionable feedback:
+### Step 1 — Decide which agents apply
 
-1. `code-reviewer` - Guidelines and bugs
-2. `docs-impact-agent` - Identify stale or missing docs
-3. Applicable specialist agents based on changes
-4. `code-simplifier` - Identify simplification opportunities (if requested or all reviews pass)
+Using the Aspect Selection Logic above (and any aspects passed in `$ARGUMENTS`), build the final list of agents to run:
 
-### Parallel (When Requested)
+- Always include `code-reviewer`.
+- Add `docs-impact-agent` unless the PR is trivial (see skip rules).
+- Add change-based specialists (`pr-test-analyzer`, `comment-analyzer`, `silent-failure-hunter`, `type-design-analyzer`) based on what the diff touches.
+- Include `code-simplifier` when `all` or `simplify` is in scope.
 
-If user specifies "parallel", launch all applicable agents simultaneously using multiple Task tool calls in one message.
+### Step 2 — Launch all selected agents in parallel (default)
+
+Dispatch **every** selected agent in a **single message with multiple Task tool calls** so they run concurrently. Do not run them one at a time.
+
+- All agents are advisory and analyze the same git diff, so they have no ordering dependencies — there is no reason to serialize them.
+- Wait for all agents to return, then aggregate their findings (see Result Aggregation).
+
+### Sequential (opt-in only)
+
+Run agents one at a time **only if the user explicitly asks for "sequential"** — e.g., to step through a single aspect for debugging.
 
 ## Agent Instructions
 
@@ -178,8 +187,8 @@ gh pr comment <PR_NUMBER> --body "<summary>"
 # Only code and docs review
 /prp-review-agents 42 code docs
 
-# All reviews in parallel
-/prp-review-agents 42 all parallel
+# Force one-at-a-time execution (parallel is the default)
+/prp-review-agents 42 all sequential
 
 # Just simplify after passing review
 /prp-review-agents 42 simplify
