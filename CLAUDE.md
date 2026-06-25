@@ -56,7 +56,7 @@ uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
 - `/prp-core-pr` - Push changes and create PR with comprehensive description
 
 **Agent Skills**:
-- `prp-core-runner` - Autonomous skill that orchestrates the complete PRP workflow when you request to implement features using PRP methodology
+- `prp-loop` - Autonomous skill that orchestrates the complete PRP workflow (plan → implement → pr → review, looping review→fix until clean) when you request to ship a feature end to end using PRP methodology
 
 **Legacy PRP Workflows**:
 - `/prp-story-create` - Convert user story/task into tactical PRP

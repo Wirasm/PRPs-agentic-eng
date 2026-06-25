@@ -17,15 +17,14 @@ You give the AI a detailed plan with context and validation commands. The AI imp
 | `/prp-prd`       | Create a PRD with implementation phases         |
 | `/prp-plan`      | Create an implementation plan                   |
 | `/prp-implement` | Execute a plan with validation loops            |
-| `/prp-ralph`     | Autonomous loop until all validations pass      |
+| `/prp-loop`      | Autonomous pipeline: plan → implement → pr → review |
 
 ### Issue & Debug Workflow
 
-| Command                  | What it does                          |
-| ------------------------ | ------------------------------------- |
-| `/prp-issue-investigate` | Analyze a GitHub issue, create a plan |
-| `/prp-issue-fix`         | Implement the fix                     |
-| `/prp-debug`             | Deep root cause analysis (5 Whys)     |
+| Command       | What it does                                      |
+| ------------- | ------------------------------------------------ |
+| `/prp-issue`  | Investigate a GitHub issue, then implement the fix (`investigate` / `fix`) |
+| `/prp-debug`  | Deep root cause analysis (5 Whys)                |
 
 ### Git & Review
 
@@ -70,9 +69,9 @@ Skip the PRD. Go straight to a plan:
 ### For Bug Fixes (GitHub Issues)
 
 ```
-/prp-issue-investigate 123
+/prp-issue investigate 123
     ↓
-/prp-issue-fix 123
+/prp-issue fix 123
 ```
 
 ### For Debugging (Errors, Stack Traces)
@@ -85,24 +84,30 @@ Creates RCA report with root cause and fix specification
 
 ---
 
-## The Ralph Loop (Autonomous Mode)
+## The PRP Loop (Autonomous Mode)
 
-Instead of `/prp-implement`, use `/prp-ralph` for fully autonomous execution:
+For fully autonomous execution, use `/prp-loop` instead of running the stages by hand:
 
 ```
-/prp-ralph .claude/PRPs/plans/my-feature.plan.md --max-iterations 20
+/prp-loop "add user authentication with JWT"
 ```
 
-This runs in a loop:
-1. Implements the plan
-2. Runs all validations
-3. If something fails → fixes it → re-validates
-4. Keeps going until everything passes
-5. Exits when done
+This runs the whole pipeline in a loop:
+1. Plans the feature
+2. Implements it, running all validations
+3. Opens a PR
+4. Reviews the PR; if anything is blocking → fixes it → re-reviews
+5. Keeps going until the review is clean
 
-Go make coffee. Come back to working code (or a progress log).
+Go make coffee. Come back to a clean PR (or a progress log in `.claude/prp-loop.state.json`).
 
-**Cancel with:** `/prp-ralph-cancel`
+**Just want to grind one plan to green (no PR), the old Ralph way?** Add `--until implement`:
+
+```
+/prp-loop "add user authentication with JWT" --until implement
+```
+
+**Resume a halted loop with:** `/prp-loop --resume`
 
 ---
 
@@ -153,16 +158,16 @@ Creates a detailed implementation plan with tasks and validation commands.
 ### "Just build it"
 
 ```bash
-/prp-ralph .claude/PRPs/plans/like-button.plan.md --max-iterations 15
+/prp-loop "add a like button to posts with real-time count updates"
 ```
 
-Autonomous execution until done.
+Autonomous execution until the PR is clean.
 
 ### "There's a bug"
 
 ```bash
-/prp-issue-investigate 456
-/prp-issue-fix 456
+/prp-issue investigate 456
+/prp-issue fix 456
 ```
 
 ### "I'm done, let's commit"
@@ -178,8 +183,8 @@ Autonomous execution until done.
 
 1. **Context is king** - The more context in your plan, the better the output
 2. **Validation matters** - Plans with test commands work better than plans without
-3. **Use Ralph for big stuff** - Let it iterate instead of babysitting
-4. **Max iterations** - Always set `--max-iterations` on Ralph loops
+3. **Use the loop for big stuff** - Let `/prp-loop` iterate instead of babysitting
+4. **Cap the cycles** - Tune `--max-cycles` / `--max-implement-iterations` on `/prp-loop`
 5. **Start specific** - "Add OAuth2 with Google" beats "add authentication"
 
 ---
@@ -192,9 +197,9 @@ Previous commands like `/prp-base-create`, `/prp-spec-create`, `/api-contract-de
 
 ## That's It
 
-1. Big feature? → `/prp-prd` → `/prp-plan` → `/prp-ralph`
+1. Big feature? → `/prp-prd` → `/prp-plan` → `/prp-loop`
 2. Medium feature? → `/prp-plan` → `/prp-implement`
-3. GitHub issue? → `/prp-issue-investigate` → `/prp-issue-fix`
+3. GitHub issue? → `/prp-issue investigate` → `/prp-issue fix`
 4. Weird bug? → `/prp-debug "error message"`
 5. Done? → `/prp-commit` → `/prp-pr`
 

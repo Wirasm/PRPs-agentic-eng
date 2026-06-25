@@ -89,8 +89,7 @@ The `.claude/commands/prp-core/` directory contains the core PRP workflow comman
 
 | Command                  | Description                                      |
 | ------------------------ | ------------------------------------------------ |
-| `/prp-issue-investigate` | Analyze GitHub issue, create implementation plan |
-| `/prp-issue-fix`         | Execute fix from investigation artifact          |
+| `/prp-issue`             | Investigate a GitHub issue, then implement the fix (`investigate` / `fix` verbs) |
 | `/prp-debug`             | Deep root cause analysis with 5 Whys methodology |
 
 ### Git & Review
@@ -103,71 +102,48 @@ The `.claude/commands/prp-core/` directory contains the core PRP workflow comman
 
 ### Autonomous Loop
 
-| Command             | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| `/prp-ralph`        | Start autonomous loop until all validations pass |
-| `/prp-ralph-cancel` | Cancel active Ralph loop                         |
+| Command     | Description                                                            |
+| ----------- | --------------------------------------------------------------------- |
+| `/prp-loop` | Autonomous cyclic pipeline: plan → implement → pr → review (review→fix loops until clean) |
 
 ---
 
-## Ralph Loop (Autonomous Execution)
+## PRP Loop (Autonomous Execution)
 
-Based on [Geoffrey Huntley's Ralph Wiggum technique](https://ghuntley.com/ralph/) - a self-referential loop that keeps iterating until the job is actually done.
+`/prp-loop` drives the full pipeline (`plan → implement → pr → review`) headlessly, running one `claude -p` session per stage and looping `review → fix` until the PR review comes back clean. Progress is tracked in `.claude/prp-loop.state.json`.
 
 ### How It Works
 
 ```
-/prp-ralph .claude/PRPs/plans/my-feature.plan.md --max-iterations 20
+/prp-loop "add user authentication with JWT"
 ```
 
-1. Claude implements the plan tasks
-2. Runs all validation commands (type-check, lint, tests, build)
-3. If any validation fails → fixes and re-validates
-4. Loop continues until ALL validations pass
-5. Outputs `<promise>COMPLETE</promise>` and exits
-
-Each iteration, Claude sees its previous work in files and git history. It's not starting fresh - it's debugging itself.
-
-### Setup
-
-The stop hook must be configured in `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/prp-ralph-stop.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+1. **plan** — writes `.claude/PRPs/plans/<feature>.plan.md`
+2. **implement** — executes the plan, looping until all validations pass, then commits
+3. **pr** — pushes the branch and opens the PR
+4. **review** — reviews the PR and writes a `{clean, blocking}` verdict
+5. **cycle** — if not clean, blocking findings feed back into a fix pass → push → re-review, until clean or `--max-cycles` is reached
 
 ### Usage
 
 ```bash
-# Create a plan
-/prp-plan "add user authentication with JWT"
+# Run the full pipeline from a feature description
+/prp-loop "add user authentication with JWT"
 
-# Let Ralph loose
-/prp-ralph .claude/PRPs/plans/add-user-auth.plan.md --max-iterations 20
+# Grind a single plan to green and stop before PR/review (the old Ralph behaviour)
+/prp-loop "add user authentication with JWT" --until implement
 
-# Cancel if needed
-/prp-ralph-cancel
+# Resume a halted or in-progress loop
+/prp-loop --resume
 ```
 
 ### Tips
 
-- Always use `--max-iterations` (default: 20) to prevent infinite loops
+- `--until <stage>` (`plan` | `implement` | `pr` | `review` | `fix`) halts once that stage completes; `--until implement` is the headless replacement for the retired single-session Ralph loop ("grind one plan to green, no PR")
+- Defaults: `--max-cycles 3`, `--max-implement-iterations 10`; base branch is auto-detected
+- Pass `--validate "<cmd>"` to give the loop an authoritative green check (exit 0 = pass)
 - Works best with plans that have clear, testable validation commands
-- State is tracked in `.claude/prp-ralph.state.md`
-- Progress and learnings are captured in the implementation report
+- State is tracked in `.claude/prp-loop.state.json`; inspect or resume from there
 
 ---
 
@@ -204,11 +180,11 @@ Creates implementation plan from description
 ### Bug Fixes: Issue Workflow
 
 ```
-/prp-issue-investigate 123
+/prp-issue investigate 123
     ↓
 Analyzes issue, creates investigation artifact
     ↓
-/prp-issue-fix 123
+/prp-issue fix 123
     ↓
 Implements fix, creates PR
 ```
