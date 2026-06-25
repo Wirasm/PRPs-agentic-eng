@@ -14,15 +14,18 @@ Design:
 - Headless: each stage is one `claude -p "<prompt>"` call in a fresh session.
 - State lives in .claude/prp-loop.state.json (resumable: re-run with --resume).
 - Fully autonomous (--dangerously-skip-permissions).
-- Does NOT use the prp-ralph Stop-hook. This script owns both loops and detects
-  "green" from each stage's `VALIDATION: GREEN` sentinel (parsed from the clean
-  result text) and/or an optional hard `--validate` command (authoritative).
+- Self-contained: this script owns both loops itself and detects "green" from each
+  stage's `VALIDATION: GREEN` sentinel (parsed from the clean result text) and/or an
+  optional hard `--validate` command (authoritative). No external Stop-hook involved.
 - Stages are invoked by naming the skill in a natural-language prompt, so the
   agent-invocable PRP skills auto-load. Skills are never modified.
 - Bounded by --max-cycles (outer review loop) and --max-implement-iterations (inner).
+- --until <stage> stops after the named stage completes. `--until implement` grinds a
+  single plan to green and stops before opening a PR (replaces the old Ralph loop).
 
 Usage:
     uv run .claude/PRPs/scripts/prp_loop.py "implement feature X" [--base main]
+    uv run .claude/PRPs/scripts/prp_loop.py "implement feature X" --until implement  # green, no PR
     uv run .claude/PRPs/scripts/prp_loop.py --resume
 """
 
@@ -242,7 +245,7 @@ def stage_review(state: dict) -> None:
     rel = verdict_path.relative_to(ROOT)
     bar = state["clean_bar"]
     prompt = (
-        f"Use the prp-review-agents skill to review PR #{num}. "
+        f"Use the prp-review skill with --agents to review PR #{num}. "
         "After the review is complete, decide whether the PR is CLEAN, where clean means "
         f"there are zero {bar} issues. Then write a JSON file to {rel} with exactly this "
         'shape and nothing else:\n'
@@ -321,6 +324,10 @@ def main() -> None:
     ap.add_argument("--validate", dest="validate_cmd",
                     help="Authoritative shell command for green (exit 0 = pass). "
                          "If omitted, falls back to the VALIDATION: GREEN sentinel.")
+    ap.add_argument("--until", dest="until_stage",
+                    choices=["plan", "implement", "pr", "review", "fix"],
+                    help="Stop after the named stage completes. '--until implement' grinds one "
+                         "plan to green and stops before opening a PR (replaces the old Ralph loop).")
     ap.add_argument("--resume", action="store_true", help="Resume from the existing state file.")
     args = ap.parse_args()
 
@@ -329,6 +336,8 @@ def main() -> None:
         if not state:
             sys.exit("no state file to resume from")
         state["status"] = "running"
+        if args.until_stage:  # allow narrowing/overriding the stop point on resume
+            state["until"] = args.until_stage
         log(f"resuming at stage={state['stage']} cycle={state['cycle']}")
     else:
         if state and state.get("status") == "running":
@@ -344,6 +353,7 @@ def main() -> None:
             "max_implement_iterations": args.max_implement_iterations,
             "clean_bar": args.clean_bar,
             "validate_cmd": args.validate_cmd,
+            "until": args.until_stage,
             "base": args.base,
             "status": "running",
             "artifacts": {},
@@ -352,6 +362,7 @@ def main() -> None:
         }
         save_state(state)
 
+    until = state.get("until")
     while state["stage"] != "done":
         stage = state["stage"]
         try:
@@ -360,8 +371,15 @@ def main() -> None:
             raise
         except Exception as e:  # noqa: BLE001 - top-level guard halts with preserved state
             halt(state, f"stage '{stage}' raised: {e}")
+        if until and stage == until and state["stage"] != "done":
+            state["status"] = "done"
+            state["stage"] = "done"
+            save_state(state)
+            log(f"reached --until {until}; stopping after stage '{stage}' (no further stages)")
+            break
 
-    log(f"DONE. PR: {state['artifacts'].get('pr_url')}")
+    pr_url = state["artifacts"].get("pr_url")
+    log(f"DONE. PR: {pr_url}" if pr_url else "DONE. (stopped before PR)")
 
 
 if __name__ == "__main__":

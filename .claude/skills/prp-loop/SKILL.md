@@ -24,12 +24,24 @@ uv run .claude/PRPs/scripts/prp_loop.py --resume
 
 Defaults: `--max-cycles 3`, `--max-implement-iterations 10`, base branch auto-detected. Pass `--validate "<cmd>"` to give the loop an authoritative green check (exit 0 = pass).
 
+### Stop after a stage (`--until`)
+
+Pass `--until <stage>` (`plan` | `implement` | `pr` | `review` | `fix`) to halt once that stage completes:
+
+```bash
+uv run .claude/PRPs/scripts/prp_loop.py "$ARGUMENTS" --until implement
+```
+
+`--until implement` runs `plan → implement` and stops once validations are green and the work is committed — **no PR, no review**. This is the headless replacement for the old single-session Ralph loop: "grind one plan to green."
+
+**UX note:** the retired Ralph loop was single-session and interactive (a Stop-hook fed the prompt back in the same session). `prp-loop --until implement` is headless instead — it drives fresh `claude -p` sessions per iteration and you resume/inspect via the state file rather than watching it live.
+
 ## What it does
 
 1. **plan** — `prp-plan` writes `.claude/PRPs/plans/<feature>.plan.md`.
 2. **implement** — `prp-implement` executes the plan, looping until all validations pass (bounded by `--max-implement-iterations`), then commits.
 3. **pr** — `prp-pr` pushes the branch and opens the PR (once).
-4. **review** — `prp-review-agents` reviews the PR and writes a `{clean, blocking}` verdict.
+4. **review** — `prp-review --agents` reviews the PR and writes a `{clean, blocking}` verdict.
 5. **cycle** — if not clean, the blocking findings feed back into a fix pass → push → re-review, up to `--max-cycles`. Clean → done.
 
 ## Safety
@@ -40,4 +52,4 @@ Defaults: `--max-cycles 3`, `--max-implement-iterations 10`, base branch auto-de
 
 ## Notes
 
-This orchestrator is self-contained and does **not** use the `prp-ralph` Stop-hook. It owns both loops itself and detects "green" from each stage's `VALIDATION: GREEN` sentinel (or the `--validate` command). The PRP skills it calls are invoked verbatim and never modified.
+This orchestrator is self-contained and uses **no** Stop-hook. It owns both loops itself and detects "green" from each stage's `VALIDATION: GREEN` sentinel (or the `--validate` command). The PRP skills it calls are invoked verbatim and never modified.

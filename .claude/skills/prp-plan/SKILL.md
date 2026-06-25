@@ -1,7 +1,7 @@
 ---
 name: prp-plan
-description: Create comprehensive feature implementation plan with codebase analysis and research. Use when the user wants to plan a feature, turn a PRD into an implementation plan, or invokes /prp-plan.
-argument-hint: <feature description | path/to/prd.md>
+description: Create comprehensive feature implementation plan with codebase analysis and research. Also wires bidirectional back/forward references between existing plans (the update-references workflow). Use when the user wants to plan a feature, turn a PRD into an implementation plan, "link two plans", "add a back/forward reference", "connect related plans", or invokes /prp-plan.
+argument-hint: <feature description | path/to/prd.md> | update-references <plan-path> <related-plan-path> [back|forward]
 ---
 
 <objective>
@@ -38,6 +38,15 @@ Discover the actual structure before proceeding.
 </context>
 
 <process>
+
+## Mode Select
+
+Before planning, check intent:
+
+- **Link / connect two existing plans** — the request is to wire a back/forward reference between plans (e.g. "link plan A to plan B", "this plan builds on that one", `update-references <plan> <related> [back|forward]`). → Follow `workflows/update-references.md` and stop. Do NOT run the planning phases below.
+- **Create / update a plan** (the default) — anything that describes a feature, hands over a PRD, or otherwise asks for an implementation plan. → Continue with Phase 0 below.
+
+---
 
 ## Phase 0: DETECT - Input Type Resolution
 

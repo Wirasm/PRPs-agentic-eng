@@ -16,4 +16,3 @@ wheels/
 # PRP loop runtime state
 .claude/prp-loop.state.json
 .claude/prp-loop.run.log
-.claude/prp-ralph.state.md

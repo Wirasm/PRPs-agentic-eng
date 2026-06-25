@@ -1,12 +1,8 @@
----
-name: prp-update-references
-description: Wire bidirectional back/forward references between PRP plans. Use when the user wants to "link two plans", "add a back/forward reference", "connect related plans", "this plan builds on that one", or invokes /prp-update-references.
-argument-hint: "<plan-path> <related-plan-path> [back|forward] (direction from the first plan's view; back = first builds on second)"
----
-
 # Update Plan References
 
 Wire bidirectional back/forward references between PRP plan files — the `## Lifecycle` section's **Back refs** / **Forward refs**. Keep both sides in sync so the plan graph stays navigable for the whole team and for agents.
+
+This is the `update-references` workflow of `prp-plan`. Invoke it when the request is to **link/connect two existing plans** rather than to create a new plan.
 
 ## Variables
 
@@ -33,4 +29,4 @@ DIRECTION: $3 — `back` (PLAN builds on / depends on RELATED) or `forward` (REL
 ## Notes
 
 - Use repo-relative paths so links survive moves within the repo.
-- Caveat: if `prp-implement` archives a plan to `.claude/PRPs/plans/completed/`, its path changes and existing refs go stale. For plans you expect to archive, re-run this skill after archiving (or link by a stable identifier).
+- Caveat: if `prp-implement` archives a plan to `.claude/PRPs/plans/completed/`, its path changes and existing refs go stale. For plans you expect to archive, re-run this workflow after archiving (or link by a stable identifier).
