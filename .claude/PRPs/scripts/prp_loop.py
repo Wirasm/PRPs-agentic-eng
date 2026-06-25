@@ -43,6 +43,7 @@ REVIEW_DIR = ROOT / ".claude" / "PRPs" / "reviews"
 GREEN = "VALIDATION: GREEN"
 PROTECTED_BRANCHES = {"main", "master", "development", "develop"}
 STAGE_TIMEOUT = 3600  # seconds per claude stage
+LOOP_ARTIFACTS = (".claude/prp-loop.state.json", ".claude/prp-loop.run.log")  # never commit these
 
 
 def log(msg: str) -> None:
@@ -128,13 +129,23 @@ def current_pr() -> tuple[int | None, str | None]:
     return d.get("number"), d.get("url")
 
 
+def _excludes() -> list[str]:
+    return [f":(exclude){p}" for p in LOOP_ARTIFACTS]
+
+
+def _dirty() -> str:
+    """Porcelain status, excluding the loop's own artifacts so we never sweep them in."""
+    return git("status", "--porcelain", "--", ".", *_excludes())
+
+
 def ensure_committed(state: dict) -> None:
-    """Make sure the working tree is committed (implement should commit, but guard anyway)."""
-    if git("status", "--porcelain"):
+    """Ensure implement's changes are committed, but NEVER commit the loop's own artifacts
+    (state.json / run.log) — even if the target repo doesn't gitignore them."""
+    if _dirty():
         log("uncommitted changes remain; committing via prp-commit")
         run_claude("Use the prp-commit skill to commit all current changes.")
-    if git("status", "--porcelain"):
-        git("add", "-A")
+    if _dirty():
+        subprocess.run(["git", "add", "-A", "--", ".", *_excludes()], cwd=ROOT)
         subprocess.run(["git", "commit", "-m", "chore: prp-loop checkpoint"], cwd=ROOT)
 
 
