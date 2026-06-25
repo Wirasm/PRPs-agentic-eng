@@ -12,3 +12,7 @@ wheels/
 .env
 
 .ruff_cache
+
+# PRP loop runtime state
+.claude/prp-loop.state.json
+.claude/prp-ralph.state.md
