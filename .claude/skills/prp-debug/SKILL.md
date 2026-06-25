@@ -1,5 +1,6 @@
 ---
-description: Deep root cause analysis - finds the actual cause, not just symptoms
+name: prp-debug
+description: Deep root cause analysis - finds the actual cause, not just symptoms. Use when the user reports a bug, error, or stacktrace, wants to debug or do root-cause analysis, or invokes /prp-debug.
 argument-hint: <issue|error|stacktrace> [--quick]
 ---
 

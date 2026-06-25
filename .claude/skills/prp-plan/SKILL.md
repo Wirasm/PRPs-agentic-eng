@@ -1,5 +1,6 @@
 ---
-description: Create comprehensive feature implementation plan with codebase analysis and research
+name: prp-plan
+description: Create comprehensive feature implementation plan with codebase analysis and research. Use when the user wants to plan a feature, turn a PRD into an implementation plan, or invokes /prp-plan.
 argument-hint: <feature description | path/to/prd.md>
 ---
 

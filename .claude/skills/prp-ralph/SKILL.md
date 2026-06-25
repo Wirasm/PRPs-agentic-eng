@@ -1,5 +1,6 @@
 ---
-description: Start autonomous Ralph loop to execute PRP plan until all validations pass
+name: prp-ralph
+description: Start autonomous Ralph loop to execute PRP plan until all validations pass. Use when the user wants to autonomously execute a plan to completion, run the Ralph loop, or invokes /prp-ralph.
 argument-hint: <plan.md|prd.md> [--max-iterations N]
 ---
 

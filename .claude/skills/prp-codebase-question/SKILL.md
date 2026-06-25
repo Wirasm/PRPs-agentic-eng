@@ -1,5 +1,6 @@
 ---
-description: Research codebase questions using parallel agents - documents what exists, not what should change
+name: prp-codebase-question
+description: Research codebase questions using parallel agents - documents what exists, not what should change. Use when the user asks how the codebase works, where something lives, or invokes /prp-codebase-question.
 argument-hint: <question or topic> [--web] [--follow-up]
 ---
 

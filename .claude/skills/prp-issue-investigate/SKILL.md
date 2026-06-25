@@ -1,5 +1,6 @@
 ---
-description: Investigate a GitHub issue or problem - analyze codebase, create plan, post to GitHub
+name: prp-issue-investigate
+description: Investigate a GitHub issue or problem - analyze codebase, create plan, post to GitHub. Use when the user wants to investigate or triage a GitHub issue or bug report, or invokes /prp-issue-investigate.
 argument-hint: <issue-number|url|"description">
 ---
 

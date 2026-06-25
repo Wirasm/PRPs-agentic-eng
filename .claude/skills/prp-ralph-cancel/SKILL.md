@@ -1,5 +1,6 @@
 ---
-description: Cancel active PRP Ralph loop
+name: prp-ralph-cancel
+description: Cancel active PRP Ralph loop. Use when the user wants to stop or cancel a running Ralph loop, or invokes /prp-ralph-cancel.
 ---
 
 # Cancel PRP Ralph Loop

@@ -1,5 +1,6 @@
 ---
-description: Implement a fix from investigation artifact - code changes, PR, and self-review
+name: prp-issue-fix
+description: Implement a fix from investigation artifact - code changes, PR, and self-review. Use when the user wants to fix an investigated issue, implement an issue fix, or invokes /prp-issue-fix.
 argument-hint: <issue-number|artifact-path> [--base <branch>]
 ---
 

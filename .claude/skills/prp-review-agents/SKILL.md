@@ -1,5 +1,6 @@
 ---
-description: Comprehensive PR review using specialized agents - comments, tests, errors, types, code quality, docs, and simplification
+name: prp-review-agents
+description: Comprehensive PR review using specialized agents - comments, tests, errors, types, code quality, docs, and simplification. Use when the user wants a multi-agent or thorough PR review, or invokes /prp-review-agents.
 argument-hint: "<pr-number> [aspects: comments|tests|errors|types|code|docs|simplify|all]"
 ---
 

@@ -1,5 +1,6 @@
 ---
-description: Comprehensive PR code review - checks diff, patterns, runs validation, comments on PR
+name: prp-review
+description: Comprehensive PR code review - checks diff, patterns, runs validation, comments on PR. Use when the user wants to review a pull request, or invokes /prp-review.
 argument-hint: <pr-number|pr-url> [--approve|--request-changes]
 ---
 

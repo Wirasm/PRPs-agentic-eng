@@ -1,5 +1,6 @@
 ---
-description: Execute an implementation plan with rigorous validation loops
+name: prp-implement
+description: Execute an implementation plan with rigorous validation loops. Use when the user wants to implement or execute a plan file, build a planned feature, or invokes /prp-implement.
 argument-hint: <path/to/plan.md> [--base <branch>]
 ---
 
