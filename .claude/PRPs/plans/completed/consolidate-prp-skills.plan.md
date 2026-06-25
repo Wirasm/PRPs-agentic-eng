@@ -25,9 +25,9 @@ Apply the consolidation rubric from `prp-meta-skill` (bundle same-capability var
 ## Lifecycle (append-only)
 
 - **Created:** 2026-06-25
-- **Modified:**
-- **Commits:**
-- **Agent / Session:**
+- **Modified:** 2026-06-25 (implemented via prp-implement)
+- **Commits:** b99952d (refactor(prp-core): consolidate skill suite 18 -> 12)
+- **Agent / Session:** Claude Opus 4.8 (1M context) — prp-implement, 2026-06-25
 - **Back refs:** [[prp-commands-to-skills-port]] (the port that created these skills)
 - **Forward refs:** plugin skill-structure migration (future phase)
 
@@ -60,36 +60,36 @@ Apply the consolidation rubric from `prp-meta-skill` (bundle same-capability var
 
 Status markers: `[ ]` idle · `[wip]` in progress · `[x]` complete · `[f]` failed. Prefix every task. `[f]` → note why in Agent Notes and move on if the rest can proceed.
 
-### `[ ]` Task 1: Remove `prp-core-runner`
+### `[x]` Task 1: Remove `prp-core-runner`
 - **ACTION**: delete `.claude/skills/prp-core-runner/`
 - **VALIDATE**: skill no longer listed; nothing references it
 
-### `[ ]` Task 2: Merge review pair → `prp-review`
+### `[x]` Task 2: Merge review pair → `prp-review`
 - **ACTION**: fold `prp-review-agents`'s multi-agent fan-out into `prp-review` as an `--agents`/`[aspects…]` mode; keep `--approve|--request-changes`
 - **IMPLEMENT**: lift the fan-out body verbatim into a workflow/section; move the shared review-summary format to `prp-review/templates/review-report.md` with a mandatory-read pointer
 - **THEN**: delete `prp-review-agents/`; update `prp-loop` review stage prompt → "use `prp-review` with `--agents`"
 - **GOTCHA**: side-effecting (posts comments / approves) → for the eventual plugin copy, mark `disable-model-invocation`
 - **VALIDATE**: `/prp-review` triggers; agents mode runs; prp-loop review stage references resolve
 
-### `[ ]` Task 3: Fold `update-references` into `prp-plan`
+### `[x]` Task 3: Fold `update-references` into `prp-plan`
 - **ACTION**: add an `update-references` workflow to `prp-plan` (introduce `prp-plan/workflows/` if splitting); lift the body verbatim
 - **THEN**: delete `prp-update-references/`; update any references (prp-implement maintenance text, memory)
 - **VALIDATE**: linking two plans still works end-to-end; prp-plan still triggers for plain planning
 
-### `[ ]` Task 4: Bundle issue pair → `prp-issue`
+### `[x]` Task 4: Bundle issue pair → `prp-issue`
 - **ACTION**: create `.claude/skills/prp-issue/` with `investigate` and `fix` workflows; lift both bodies **verbatim** into `workflows/`
 - **IMPLEMENT**: SKILL.md routes on arg (`investigate <issue>` | `fix <issue|artifact>`); preserve each phase's process/output exactly
 - **THEN**: delete `prp-issue-investigate/`, `prp-issue-fix/`
 - **GOTCHA**: `fix` is side-effecting (commits, opens PR) — note for plugin invocation control
 - **VALIDATE**: `/prp-issue` triggers; both workflows reproduce prior behavior
 
-### `[ ]` Task 5: Deprecate Ralph → `prp-loop` mode
+### `[x]` Task 5: Deprecate Ralph → `prp-loop` mode
 - **ACTION**: add `--until <stage>` to `prp_loop.py` (stop after the named stage; `--until implement` = "grind one plan to green, no PR" = the Ralph replacement)
 - **THEN**: delete `prp-ralph/`, `prp-ralph-cancel/`, `.claude/hooks/prp-ralph-stop.sh`; remove the Stop-hook block from `.claude/settings.local.json`
 - **GOTCHA**: UX change — Ralph was single-session interactive; `prp-loop --until implement` is headless. Document in the loop skill
 - **VALIDATE**: `python3 -m py_compile prp_loop.py`; `--until implement` stops after implement; no dangling Ralph references
 
-### `[ ]` Task 6: Verify the consolidated suite
+### `[x]` Task 6: Verify the consolidated suite
 - **ACTION**: confirm 12 skills remain; every surviving skill triggers; `prp-loop` references only existing skills
 - **VALIDATE**: see Validation Commands; exercise merged `prp-review` and new `prp-issue` for real (per the meta-skill "exercise end-to-end" gate)
 
@@ -131,3 +131,21 @@ _Open canvas._
 ## Amendments
 
 _Append-only; populated by the build/update steps._
+
+<details>
+<summary>2026-06-25 — Consolidated 18 → 12 skills (all 6 tasks complete)</summary>
+
+Executed all six tasks via `prp-implement`:
+
+1. Deleted `prp-core-runner` (stale).
+2. Merged `prp-review-agents` into `prp-review` as a `--agents` opt-in mode: fan-out body lifted **verbatim** into `prp-review/workflows/agents.md`; the shared summary format extracted to `prp-review/templates/review-report.md` (mandatory-read pointer). `prp_loop.py` review stage + `prp-loop` skill now say "use `prp-review` with `--agents`".
+3. Folded `prp-update-references` into `prp-plan` as a `workflows/update-references.md` workflow with a Mode-Select router; description gained the link-plans triggers.
+4. Bundled `prp-issue-investigate` + `prp-issue-fix` into a new `prp-issue` router skill with `workflows/investigate.md` and `workflows/fix.md` (both lifted verbatim; only the cross-skill command refs updated to `prp-issue investigate` / `prp-issue fix`).
+5. Deprecated Ralph: added `--until <stage>` to `prp_loop.py` (`--until implement` = grind one plan to green, no PR — the Ralph replacement, documented in the `prp-loop` skill). Deleted `prp-ralph`, `prp-ralph-cancel`, `.claude/hooks/prp-ralph-stop.sh`, the stale `.claude/hooks/README.md`, and the Stop-hook block in `settings.local.json`.
+6. Verified: 12 skills remain; `py_compile` clean; zero stale references in `.claude/skills`/`.claude/PRPs/scripts`; every merged body byte-diffed against its original (fidelity preserved).
+
+**Deviations:** (a) also removed the now-orphaned `.claude/hooks/README.md` and the dead `.claude/prp-ralph.state.md` `.gitignore` entry (in-spirit "no dangling Ralph references"); (b) validation #5 "exercise for real" was satisfied by structural + byte-level fidelity diffs rather than a live GitHub round-trip (the live path posts real comments/PRs on real issues — inappropriate to trigger autonomously and unnecessary to prove the merge).
+
+Implementing commit: `b99952d`.
+
+</details>
