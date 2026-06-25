@@ -1,6 +1,6 @@
 # Implementation Report
 
-**Plan**: `.claude/PRPs/plans/add-scratch-prp-loop-test-file.plan.md`
+**Plan**: `.claude/PRPs/plans/completed/add-scratch-prp-loop-test-file.plan.md`
 **Base Branch**: `feat/prp-skills-and-loop`
 **Branch**: `feature/add-scratch-prp-loop-test-file`
 **Date**: 2026-06-25

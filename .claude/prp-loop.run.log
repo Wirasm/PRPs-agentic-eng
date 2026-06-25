@@ -1,5 +1,0 @@
-[prp-loop] STAGE plan
-[prp-loop] plan -> .claude/PRPs/plans/add-scratch-prp-loop-test-file.plan.md
-[prp-loop] STAGE implement
-[prp-loop] implement iteration 1/10 (cycle 0)
-[prp-loop] uncommitted changes remain; committing via prp-commit
