@@ -68,7 +68,9 @@ Run `validation.md` gates, including the behavior-preservation gate and the `plu
 
 ---
 
-## Before / after example (prp-plan)
+## Before / after example (illustrative — prp-plan)
+
+This shows **the technique, not a canonical plan shape.** What sections a plan contains is a per-project decision; the point here is only *how* extraction works, using a plan skill that happened to grow fat.
 
 **Before:** `prp-plan/SKILL.md` inlines (a) the phase workflow, (b) the full plan-document skeleton it must emit, (c) detailed task-block guidance (MIRROR/IMPORTS/GOTCHA), and (d) a long list of per-language validation commands. ~3,000+ words, all loaded every run.
 

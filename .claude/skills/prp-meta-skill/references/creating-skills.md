@@ -61,7 +61,7 @@ Run every gate in `validation.md`: structure check, description quality, body st
 
 ## From an existing command/prompt
 
-When the source is an existing slash command (the common PRP case):
+**Fidelity first, optimize second.** Porting an existing, working command is a behavior-preservation task, not a redesign — land an identical-behaving skill and prove it *before* changing anything about how it reads. When the source is an existing slash command (the common PRP case):
 
 1. Preserve the body **verbatim** — it is the proven process/output. Move it under `.claude/skills/<name>/SKILL.md`.
 2. Transform only the frontmatter: add `name`, extend `description` with trigger phrases, keep `argument-hint`/`allowed-tools`/`model`.

@@ -49,10 +49,11 @@ If that agent is unavailable, run Gates 1–5 manually as the equivalent check.
 
 Apply its high-confidence findings; ignore noise.
 
-## Gate 7 — Trigger test
+## Gate 7 — Trigger test, then exercise for real
 
 - **User invocation:** confirm `/<name>` appears and runs.
 - **Agent invocation:** describe a task in the skill's domain (using one of the trigger phrases) and confirm the skill auto-loads. If it does not, strengthen the `description` triggers and retry.
+- **Exercise it end-to-end on a real task** — don't stop at "it loaded." Run the skill against actual work and watch it execute; a real run surfaces bugs a load-check never will (a real end-to-end run is how the prp-loop caught a defect in its own commit logic). Fold what you learn back in.
 
 ## Done criteria
 

@@ -13,14 +13,23 @@ A PRP-style runbook for two jobs:
 
 This skill is built the way it teaches: a lean body that defers detail to `references/`. Follow that example.
 
-## The PRP lens on skills
+## Prescribe the craft, not the content
 
-Apply the four PRP principles to every skill:
+This skill is opinionated about **how to build a skill well** and deliberately agnostic about **what any given skill — or the artifact it produces — should contain**.
 
-1. **Context is King** — a skill must give the consuming agent ALL the context it needs (patterns, gotchas, schemas, examples), via whichever source fits: carried inline, bundled in `references/`/`templates/` and disclosed on demand, pointed to by file path or URL, or gathered from the user at runtime when the skill is interactive by design. Curate it — don't dump it. (See `references/skill-standards.md` → Context sources.)
-2. **Validation loops** — every skill ships verifiable gates. This meta-skill validates with a checklist, the `plugin-dev:skill-reviewer` agent, and a real trigger test (`references/validation.md`).
-3. **Information dense** — real trigger phrases, real templates, real `file:line`. No filler, no restating what the model already knows.
-4. **Progressive success** — ship a minimal SKILL.md that triggers correctly first, validate, then enrich with references. Do not build all the references before the spine works.
+- **Prescribe (firm, universal):** progressive disclosure, third-person trigger-rich descriptions, imperative body, no-duplication, lean body, every reference wired, deliberate invocation control, validation that fits. See `references/skill-standards.md`.
+- **Do NOT prescribe (per-project, the author's call):** the sections a plan / PRD / report should contain, what a project's template looks like, which phases exist, the domain vocabulary. There is no canonical output shape — guide the author to a good decision, never hand them a fixed one.
+
+Restrictions are not rigidity: be strict on the craft so the author stays free on the content.
+
+## The PRP lens — applied to the skill *type*
+
+Classify the skill first (workflow / artifact-generator / knowledge-reference / tool-wrapper — see `references/skill-standards.md` → Skill types), then apply only the principles that fit:
+
+1. **Context is King** — give the agent ALL the context it needs (patterns, gotchas, schemas, examples) via whichever source fits: inline, bundled and disclosed on demand, pointed to by file path or URL, or gathered from the user at runtime. Curate it — don't dump it. (`references/skill-standards.md` → Context sources.)
+2. **Validation that fits** — *workflow* skills ship verifiable gates, and prefer an external, authoritative check (exit code, file presence) over the agent's own "done" sentinel. A knowledge/reference skill has nothing to validate — don't bolt a loop onto it.
+3. **Information dense** — real trigger phrases, real examples, real `file:line`. No filler, no restating what the model already knows.
+4. **Progressive success** — ship a minimal SKILL.md that triggers correctly first, validate, then enrich with references. Don't build all the references before the spine works.
 
 ## Step 0 — Pick the mode
 

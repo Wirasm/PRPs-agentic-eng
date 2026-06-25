@@ -8,6 +8,10 @@ argument-hint: <optional: expected args, e.g. <path> [--flag]>
 
 <One or two sentences: the skill's purpose and the end artifact/output. Write in imperative voice from here on.>
 
+<!-- The sections below are a STARTING SUGGESTION, not a required shape. Keep, drop, rename, or
+     reorder them to fit this skill. A knowledge/reference skill may have no Workflow at all; a
+     tool-wrapper may be mostly a Resources pointer. Decide your project's content yourself. -->
+
 ## When to use
 
 <Briefly, the situations this applies to. Mirror the description's triggers.>
@@ -32,6 +36,7 @@ argument-hint: <optional: expected args, e.g. <path> [--flag]>
 Authoring reminders (delete before shipping):
 - description: third person + literal trigger phrases + /name. ≤1024 chars.
 - body: imperative, lean (1,500–2,000 words). Detail → references/. Output shapes → templates/.
+- match structure to the skill TYPE (workflow / artifact-generator / knowledge / tool-wrapper); don't force a workflow shape onto a knowledge skill.
 - context can be bundled (references/templates), external (a file path or URL the body cites), or gathered from the user at runtime — pick per ownership/volatility.
 - both user- and agent-invocable: do NOT set user-invocable/disable-model-invocation.
 - wire every bundled file from the Resources section. No duplication body<->references.
