@@ -18,4 +18,4 @@ wheels/
 .claude/prp-loop.run.log
 
 # PRP Ralph runtime state (written by the plugins/prp-core ralph commands)
-.claude/prp-ralph.state.md
+.claude/prp-ralph.state.md.claude/PRPs/reviews/*.verdict.json
