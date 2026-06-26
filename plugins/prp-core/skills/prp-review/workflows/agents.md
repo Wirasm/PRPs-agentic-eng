@@ -1,11 +1,6 @@
----
-description: Comprehensive PR review using specialized agents - comments, tests, errors, types, code quality, docs, and simplification
-argument-hint: "<pr-number> [aspects: comments|tests|errors|types|code|docs|simplify|all]"
----
-
 # Comprehensive PR Review with Specialized Agents
 
-Run a multi-agent review on a pull request, with each agent focusing on a specific aspect of code quality.
+Run a multi-agent review on a pull request, with each agent focusing on a specific aspect of code quality. This is the `--agents` mode of `prp-review`.
 
 **Target**: $ARGUMENTS
 
@@ -115,54 +110,9 @@ When launching each agent via Task tool:
 
 ## Result Aggregation
 
-After all agents complete, aggregate findings:
+After all agents complete, aggregate findings into the canonical summary format.
 
-### Categories
-
-| Category | Description | Action |
-|----------|-------------|--------|
-| **Critical** | Must fix before merge | Block merge |
-| **Important** | Should fix | Address before merge |
-| **Suggestions** | Nice to have | Consider |
-| **Strengths** | What's good | Acknowledge |
-
-### Summary Format
-
-```markdown
-## PR Review Summary
-
-### Critical Issues (X found)
-| Agent | Issue | Location |
-|-------|-------|----------|
-| code-reviewer | Description | `file.ts:line` |
-
-### Important Issues (X found)
-| Agent | Issue | Location |
-|-------|-------|----------|
-| silent-failure-hunter | Description | `file.ts:line` |
-
-### Suggestions (X found)
-| Agent | Suggestion | Location |
-|-------|------------|----------|
-| type-design-analyzer | Description | `file.ts:line` |
-
-### Strengths
-- Well-structured error handling
-- Good test coverage for critical paths
-
-### Documentation Issues
-- `CLAUDE.md` - Stale command reference needs update
-- `README.md` - Configuration section outdated
-
-### Verdict
-[READY TO MERGE / NEEDS FIXES / CRITICAL ISSUES]
-
-### Recommended Actions
-1. Fix critical issues first
-2. Address important issues
-3. Consider suggestions
-4. Re-run review after fixes
-```
+**MANDATORY READ**: `../templates/review-report.md` — use its Categories and Summary Format exactly. Do not improvise a different shape.
 
 ## Post to GitHub
 
@@ -175,41 +125,41 @@ gh pr comment <PR_NUMBER> --body "<summary>"
 ## Usage Examples
 
 ```bash
-# Full review of specific PR
-/prp-review-agents 163
+# Full multi-agent review of specific PR
+/prp-review 163 --agents
 
 # Review only specific aspects
-/prp-review-agents 163 tests errors
+/prp-review 163 --agents tests errors
 
 # Review current branch's PR
-/prp-review-agents
+/prp-review --agents
 
 # Only code and docs review
-/prp-review-agents 42 code docs
+/prp-review 42 --agents code docs
 
 # Force one-at-a-time execution (parallel is the default)
-/prp-review-agents 42 all sequential
+/prp-review 42 --agents all sequential
 
 # Just simplify after passing review
-/prp-review-agents 42 simplify
+/prp-review 42 --agents simplify
 ```
 
 ## Workflow Integration
 
 **Before creating PR**:
-1. Run `/prp-review-agents` on current branch
+1. Run `/prp-review --agents` on current branch
 2. Fix critical and important issues
 3. Re-run to verify
 4. Create PR
 
 **During PR review**:
-1. Run `/prp-review-agents <pr-number>`
+1. Run `/prp-review <pr-number> --agents`
 2. Review posts summary to GitHub
 3. Address feedback
 4. Re-run targeted aspects
 
 **After making changes**:
-1. Run specific aspects: `/prp-review-agents <pr-number> tests code`
+1. Run specific aspects: `/prp-review <pr-number> --agents tests code`
 2. Verify issues resolved
 3. Push updates
 

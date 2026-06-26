@@ -1,8 +1,3 @@
----
-description: Implement a fix from investigation artifact - code changes, PR, and self-review
-argument-hint: <issue-number|artifact-path> [--base <branch>]
----
-
 # Implement Issue
 
 **Input**: $ARGUMENTS
@@ -11,7 +6,7 @@ argument-hint: <issue-number|artifact-path> [--base <branch>]
 
 ## Your Mission
 
-Execute the implementation plan from `/prp-issue-investigate`:
+Execute the implementation plan from `prp-issue investigate`:
 
 1. Load and validate the artifact
 2. Ensure git state is correct
@@ -83,7 +78,7 @@ cat {artifact-path}
 ```
 ❌ Artifact not found at .claude/PRPs/issues/issue-{number}.md
 
-Run `/prp-issue-investigate {number}` first to create the implementation plan.
+Run `/prp-issue investigate {number}` first to create the implementation plan.
 ```
 
 **PHASE_1_CHECKPOINT:**
@@ -114,7 +109,7 @@ File: src/x.ts:45
 - Actual code: {different snippet}
 
 Options:
-1. Re-run /prp-issue-investigate to get fresh analysis
+1. Re-run `prp-issue investigate` to get fresh analysis
 2. Proceed carefully with manual adjustments
 ```
 
@@ -591,7 +586,7 @@ git push
 ### Artifact is outdated
 
 - Warn user about drift
-- Suggest re-running `/prp-issue-investigate`
+- Suggest re-running `prp-issue investigate`
 - Can proceed with caution if changes are minor
 
 ### Tests fail after implementation

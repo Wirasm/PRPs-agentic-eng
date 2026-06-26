@@ -1,8 +1,3 @@
----
-description: Investigate a GitHub issue or problem - analyze codebase, create plan, post to GitHub
-argument-hint: <issue-number|url|"description">
----
-
 # Investigate Issue
 
 **Input**: $ARGUMENTS
@@ -13,7 +8,7 @@ argument-hint: <issue-number|url|"description">
 
 Investigate the issue/problem and produce a comprehensive implementation plan that:
 
-1. Can be executed by `/prp-issue-fix`
+1. Can be executed by `prp-issue fix`
 2. Is posted as a GitHub comment (if GH issue provided)
 3. Captures all context needed for one-pass implementation
 
@@ -528,7 +523,7 @@ gh issue comment {number} --body "$(cat <<'EOF'
 
 ### Next Step
 
-To implement: `/prp-issue-fix {number}`
+To implement: `/prp-issue fix {number}`
 
 ---
 
@@ -583,7 +578,7 @@ EOF
 
 ### Next Step
 
-Run `/prp-issue-fix {number}` to execute the plan.
+Run `/prp-issue fix {number}` to execute the plan.
 ````
 
 ---

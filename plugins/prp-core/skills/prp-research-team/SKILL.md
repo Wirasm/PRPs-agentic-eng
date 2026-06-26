@@ -1,5 +1,6 @@
 ---
-description: Design a dynamic research team and plan using agent teams -- analyzes question, composes team, creates executable research plan
+name: prp-research-team
+description: Design a dynamic research team and plan using agent teams -- analyzes question, composes team, creates executable research plan. Use when the user wants to plan multi-agent research on a question or topic, or invokes /prp-research-team.
 argument-hint: <research question or topic> [--orchestration "guidance for team composition"]
 ---
 

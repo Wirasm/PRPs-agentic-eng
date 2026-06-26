@@ -1,5 +1,6 @@
 ---
-description: Interactive PRD generator - problem-first, hypothesis-driven product spec
+name: prp-prd
+description: Interactive PRD generator - problem-first, hypothesis-driven product spec. Use when the user wants to create a PRD, write a product or feature spec, scope a new product, or invokes /prp-prd.
 argument-hint: [feature/product idea] (blank = start with questions)
 ---
 

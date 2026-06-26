@@ -1,56 +1,65 @@
 # PRP Core Plugin
 
-Complete PRP (Product Requirement Prompt) workflow automation for Claude Code.
+Complete PRP (Product Requirement Prompt) workflow automation for Claude Code, packaged as **Agent Skills**.
 
 ## Overview
 
-This plugin provides a comprehensive workflow for creating, executing, and shipping features using the PRP methodology - where **PRP = PRD + curated codebase intelligence + agent/runbook** designed to enable AI agents to ship production-ready code on the first pass.
+This plugin provides a comprehensive workflow for creating, executing, and shipping features using the PRP methodology — where **PRP = PRD + curated codebase intelligence + agent/runbook** — designed to enable AI agents to ship production-ready code on the first pass.
 
-## Commands
+Everything ships as **skills** (not slash commands), so each one is both **user-invocable** (type `/prp-core:<name>`) and **agent-invocable** (Claude loads it automatically when your request matches its description). Skills that bundle multiple modes (e.g. `prp-issue`, `prp-review`) keep a lean router in `SKILL.md` and defer detail to `workflows/`.
 
-### Core Workflow
+## Skills
 
-| Command | Description |
-|---------|-------------|
-| `/prp-prd` | Interactive PRD generator with implementation phases |
-| `/prp-plan` | Create implementation plan (from PRD or free-form input) |
-| `/prp-implement` | Execute a plan with validation loops |
+### Planning & spec
 
-### Issue Workflow
+| Skill | Description |
+|-------|-------------|
+| `/prp-core:prp-prd` | Interactive, problem-first PRD generator with an implementation-phases table |
+| `/prp-core:prp-plan` | Create an implementation plan (from a PRD or free-form). Also wires bidirectional plan references via its `update-references` workflow |
 
-| Command | Description |
-|---------|-------------|
-| `/prp-issue-investigate` | Analyze GitHub issue, create implementation plan |
-| `/prp-issue-fix` | Execute fix from investigation artifact |
+### Build & ship
 
-### Research
+| Skill | Description |
+|-------|-------------|
+| `/prp-core:prp-implement` | Execute a plan with rigorous validation loops; maintains the plan's status markers, lifecycle, and amendments |
+| `/prp-core:prp-loop` | **Autonomous** cyclic pipeline: plan → implement → pr → review, looping review→fix until clean. `--until implement` grinds a single plan to green without a PR |
+| `/prp-core:prp-commit` | Smart commit with natural-language file targeting |
+| `/prp-core:prp-pr` | Push the branch and open a PR with template support |
 
-| Command | Description |
-|---------|-------------|
-| `/prp-research-team` | Design dynamic research team and plan using agent teams |
+### Review & issues
 
-### Git & Review
+| Skill | Description |
+|-------|-------------|
+| `/prp-core:prp-review` | Comprehensive PR review. Single-pass by default; `--agents` fans out specialists (comments, tests, errors, types, code, docs, simplify) |
+| `/prp-core:prp-issue` | Two-phase issue workflow: `investigate <issue>` → artifact, then `fix <issue>` → code, PR, self-review |
 
-| Command | Description |
-|---------|-------------|
-| `/prp-commit` | Smart commit with natural language file targeting |
-| `/prp-pr` | Create PR with template support |
-| `/prp-review` | Comprehensive PR code review |
-| `/prp-review-agents` | Multi-agent PR review (comments, tests, errors, types, code, docs, simplify) |
+### Research & debug
+
+| Skill | Description |
+|-------|-------------|
+| `/prp-core:prp-codebase-question` | Research how the codebase works using parallel agents — documents what exists |
+| `/prp-core:prp-debug` | Deep root-cause analysis (5 Whys) — finds the actual cause, not symptoms |
+| `/prp-core:prp-research-team` | Design a dynamic research team and plan using agent teams |
+
+### Authoring
+
+| Skill | Description |
+|-------|-------------|
+| `/prp-core:prp-meta-skill` | Author new skills and refactor fat skills into a lean `SKILL.md` + `references/` (prescribes the craft, not your project's content) |
 
 ## Agents
 
-Specialized agents for code analysis and review workflows.
+Specialized, advisory (read-only) agents used by the review and planning skills.
 
-### Codebase Analysis
+### Codebase analysis
 
 | Agent | Description |
 |-------|-------------|
 | `codebase-analyst` | Documents HOW code works with file:line references |
 | `codebase-explorer` | Finds WHERE code lives AND extracts patterns |
-| `web-researcher` | Researches web for docs, APIs, best practices |
+| `web-researcher` | Researches the web for docs, APIs, best practices |
 
-### Review Workflow
+### Review
 
 | Agent | Description |
 |-------|-------------|
@@ -60,179 +69,118 @@ Specialized agents for code analysis and review workflows.
 | `silent-failure-hunter` | Error handling and silent failures |
 | `type-design-analyzer` | Type encapsulation and invariants |
 | `code-simplifier` | Clarity and maintainability improvements |
-| `docs-impact-agent` | Updates stale documentation |
+| `docs-impact-agent` | Flags stale documentation |
 
-### Using Agents
+Agents are invoked automatically by `/prp-core:prp-review --agents` and `/prp-core:prp-issue fix`, or manually via the Task tool.
 
-Agents are invoked automatically by `/prp-review-agents` or manually via Task tool:
+## Workflows
 
-```
-/prp-review-agents 123              # Full review of PR #123
-/prp-review-agents 123 tests errors # Specific aspects only
-```
-
-## Workflow
-
-### Large Features: PRD → Plan → Implement
+### Large features: PRD → plan → implement
 
 ```
-/prp-prd "user authentication system"
-    ↓
-Creates PRD with Implementation Phases table
-    ↓
-/prp-plan .claude/PRPs/prds/user-auth.prd.md
-    ↓
-Auto-selects next pending phase, creates plan
-    ↓
-/prp-implement .claude/PRPs/plans/user-auth-phase-1.plan.md
-    ↓
-Executes plan, updates PRD progress, archives plan
-    ↓
-Repeat /prp-plan for next phase
+/prp-core:prp-prd "user authentication system"
+    ↓  creates a PRD with an Implementation Phases table
+/prp-core:prp-plan .claude/PRPs/prds/user-auth.prd.md
+    ↓  auto-selects the next pending phase, creates a plan
+/prp-core:prp-implement .claude/PRPs/plans/user-auth-phase-1.plan.md
+    ↓  executes, validates, updates the plan + PRD, archives
+repeat /prp-core:prp-plan for the next phase
 ```
 
-### Medium Features: Direct to Plan
+### Medium features: plan → implement
 
 ```
-/prp-plan "add pagination to the API"
-    ↓
-/prp-implement .claude/PRPs/plans/add-pagination.plan.md
+/prp-core:prp-plan "add pagination to the API"
+/prp-core:prp-implement .claude/PRPs/plans/add-pagination.plan.md
 ```
 
-### Bug Fixes: Issue Workflow
+### Hands-off: the autonomous loop
 
 ```
-/prp-issue-investigate 123
-    ↓
-/prp-issue-fix 123
+/prp-core:prp-loop "add pagination to the API"
+    ↓  plan → implement (loop to green) → PR → review → fix → re-review → clean
+```
+
+### Bug fixes: the issue workflow
+
+```
+/prp-core:prp-issue investigate 123     # analyze + artifact + post to GitHub
+/prp-core:prp-issue fix 123             # implement, PR, self-review
 ```
 
 ## Installation
 
-### Option 1: From GitHub (Recommended)
+### From GitHub (recommended)
 
 ```bash
-# Add marketplace from GitHub
 /plugin marketplace add Wirasm/PRPs-agentic-eng
-
-# Install plugin
 /plugin install prp-core@prp-marketplace
 ```
 
-### Option 2: Local Development/Testing
+### Local development / testing
 
 ```bash
-# Navigate to the repository root
-cd /path/to/PRPs-agentic-eng
-
-# Start Claude Code
-claude
-
-# Add local marketplace (use absolute path)
 /plugin marketplace add /absolute/path/to/PRPs-agentic-eng
-
-# Install plugin
 /plugin install prp-core@prp-marketplace
-
-# Restart Claude Code (required)
+# Restart Claude Code
 ```
 
-### Option 3: Team Automatic Installation
+### Team automatic installation
 
 Add to your project's `.claude/settings.json`:
 
 ```json
 {
   "extraKnownMarketplaces": {
-    "prp-marketplace": {
-      "source": "Wirasm/PRPs-agentic-eng"
-    }
+    "prp-marketplace": { "source": "Wirasm/PRPs-agentic-eng" }
   },
-  "enabledPlugins": [
-    "prp-core@prp-marketplace"
-  ]
+  "enabledPlugins": ["prp-core@prp-marketplace"]
 }
 ```
-
-## Artifacts Structure
-
-All artifacts are stored in `.claude/PRPs/`:
-
-```
-.claude/PRPs/
-├── prds/              # Product requirement documents
-├── plans/             # Implementation plans
-│   └── completed/     # Archived completed plans
-├── reports/           # Implementation reports
-├── issues/            # Issue investigation artifacts
-│   └── completed/     # Archived completed investigations
-└── reviews/           # PR review reports
-```
-
-## PRD Phases
-
-PRDs include an Implementation Phases table:
-
-```markdown
-| # | Phase | Description | Status | Parallel | Depends | PRP Plan |
-|---|-------|-------------|--------|----------|---------|----------|
-| 1 | Auth  | User login  | complete | -      | -       | [link]   |
-| 2 | API   | Endpoints   | in-progress | -   | 1       | [link]   |
-| 3 | UI    | Frontend    | pending | with 4  | 2       | -        |
-```
-
-- **Status**: `pending` → `in-progress` → `complete`
-- **Parallel**: Phases that can run concurrently
-- **Depends**: Phases that must complete first
-
-## PRP Methodology
-
-### What is a PRP?
-
-**PRP = PRD + curated codebase intelligence + agent/runbook**
-
-A PRP is a comprehensive implementation document containing:
-1. **Context** - All necessary patterns, documentation, and examples
-2. **Plan** - Step-by-step tasks with validation gates
-3. **Validation** - Executable commands to verify correctness
-
-### Core Principles
-
-1. **Context is King** - Include ALL necessary information
-2. **Validation Loops** - Provide executable tests the AI can run and fix
-3. **Information Dense** - Use keywords and patterns from codebase
-4. **Bounded Scope** - Each plan completable by AI in one loop
 
 ## Requirements
 
 - Claude Code installed
-- Git configured
-- GitHub CLI (`gh`) for PR creation
+- Git configured; GitHub CLI (`gh`) for PR/issue operations
+- [`uv`](https://docs.astral.sh/uv/) — runs the bundled `prp-loop` orchestrator (`skills/prp-loop/scripts/prp_loop.py`)
+
+## Artifacts
+
+All artifacts are written to the **target project's** `.claude/PRPs/`:
+
+```
+.claude/PRPs/
+├── prds/              # product requirement documents
+├── plans/             # implementation plans
+│   └── completed/     # archived after implement
+├── reports/           # implementation reports
+├── issues/            # issue investigation artifacts
+│   └── completed/
+└── reviews/           # PR review reports
+```
+
+## PRP methodology
+
+**PRP = PRD + curated codebase intelligence + agent/runbook.** Core principles:
+
+1. **Context is King** — include (or reference) all the context the agent needs
+2. **Validation loops** — executable gates the AI runs and fixes until green
+3. **Information dense** — real patterns, file:line, commands; no filler
+4. **Progressive success** — start small, validate, then enhance
+
+Plans are living artifacts: an append-only Lifecycle header (created/modified/commits/refs), inline task status markers (`[ ] [wip] [x] [f]`), a validation loop, an Amendments log, and a free-form Agent Notes canvas for whatever the template didn't anticipate.
 
 ## Troubleshooting
 
-### Plugin Not Loading
+**Plugin not loading** — `/plugin uninstall prp-core@prp-marketplace` then re-install and restart.
 
-```bash
-/plugin
-/plugin uninstall prp-core@marketplace
-/plugin install prp-core@marketplace
-# Restart Claude Code
-```
-
-### Commands Not Found
-
-Ensure Claude Code restarted after installation:
-
-```bash
-/help
-```
+**Skills not found** — ensure Claude Code restarted after install; check `/help` and `/plugin`.
 
 ## License
 
-MIT License
+MIT — see repository root.
 
 ## Support
 
-- **Issues**: https://github.com/Wirasm/PRPs-agentic-eng/issues
-- **Documentation**: https://github.com/Wirasm/PRPs-agentic-eng
+- Issues: https://github.com/Wirasm/PRPs-agentic-eng/issues
+- Docs: https://github.com/Wirasm/PRPs-agentic-eng

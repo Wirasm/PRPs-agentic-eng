@@ -1,6 +1,7 @@
 ---
-description: Create comprehensive feature implementation plan with codebase analysis and research
-argument-hint: <feature description | path/to/prd.md>
+name: prp-plan
+description: Create comprehensive feature implementation plan with codebase analysis and research. Also wires bidirectional back/forward references between existing plans (the update-references workflow). Use when the user wants to plan a feature, turn a PRD into an implementation plan, "link two plans", "add a back/forward reference", "connect related plans", or invokes /prp-plan.
+argument-hint: <feature description | path/to/prd.md> | update-references <plan-path> <related-plan-path> [back|forward]
 ---
 
 <objective>
@@ -37,6 +38,15 @@ Discover the actual structure before proceeding.
 </context>
 
 <process>
+
+## Mode Select
+
+Before planning, check intent:
+
+- **Link / connect two existing plans** — the request is to wire a back/forward reference between plans (e.g. "link plan A to plan B", "this plan builds on that one", `update-references <plan> <related> [back|forward]`). → Follow `workflows/update-references.md` and stop. Do NOT run the planning phases below.
+- **Create / update a plan** (the default) — anything that describes a feature, hands over a PRD, or otherwise asks for an implementation plan. → Continue with Phase 0 below.
+
+---
 
 ## Phase 0: DETECT - Input Type Resolution
 
@@ -388,6 +398,19 @@ So that {benefit}
 
 ---
 
+## Lifecycle (append-only)
+
+- **Created:** {ISO-8601 — set once, never changed}
+- **Modified:** {append-only ISO list — add one entry every time the plan is built or updated}
+- **Commits:** {append-only list of commit SHAs that implemented this plan}
+- **Agent / Session:** {append-only list of agent(model) + session id, one per work session}
+- **Back refs:** {plans/docs this plan builds on or depends on — `relative/path` + short label}
+- **Forward refs:** {plans/docs that build on or extend this plan — `relative/path` + short label}
+
+> **Append-only:** `Created` is set once; every other field is a list you only ever add to — never overwrite or remove existing entries. Keep references bidirectional: when you add a back/forward ref here, add the reciprocal ref on the other plan.
+
+---
+
 ## UX Design
 
 ### Before State
@@ -506,7 +529,9 @@ Explicit exclusions to prevent scope creep:
 
 Execute in order. Each task is atomic and independently verifiable.
 
-### Task 1: CREATE `src/core/database/schema.ts` (update)
+**Status markers** — prefix EVERY task header with one; the build agent updates it inline as it works: `[ ]` idle · `[wip]` in progress · `[x]` complete · `[f]` failed. All tasks start `[ ]`. If a task cannot be made to pass, mark it `[f]`, record why in Agent Notes, and move on if the rest of the plan can still proceed.
+
+### `[ ]` Task 1: CREATE `src/core/database/schema.ts` (update)
 
 - **ACTION**: ADD table definition to schema
 - **IMPLEMENT**: {specific columns, types, constraints}
@@ -603,6 +628,8 @@ Execute in order. Each task is atomic and independently verifiable.
 
 **IMPORTANT**: Replace these placeholders with actual commands from the project's package.json/config.
 
+🔁 **Validation loop:** the plan is not complete until every command below passes (exit 0). On any failure, fix the cause and re-run — loop until all pass. If a check is genuinely impossible, mark it `[f]`, note why in Agent Notes, and move on.
+
 ### Level 1: STATIC_ANALYSIS
 
 ```bash
@@ -684,9 +711,37 @@ Use Browser MCP to verify:
 
 ---
 
-## Notes
+## Questionables
 
-{Additional context, design decisions, trade-offs, future considerations}
+_Include this section whenever a decision was assumed rather than certain (and whenever the confidence score is below 8). Surface open decisions here instead of silently deciding — one collapsible entry per open question, with the assumption you took so a human can confirm or correct it._
+
+<details>
+<summary>{Open question / assumption / risk}</summary>
+
+{The assumption taken and the rationale behind it.}
+
+</details>
+
+---
+
+## Agent Notes
+
+_Open canvas — the planning agent runs free here. There is no fixed shape: capture anything the sections above did not template for — feature-parity matrices, tradeoffs weighed, approaches considered and rejected, new dependencies (added via the project's package manager), open threads, references, future work. Use whatever structure (prose, tables, lists, diagrams) best serves the reader. Prescription ends here — do not restrict yourself._
+
+{Free-form notes.}
+
+---
+
+## Amendments
+
+_Append-only history of changes made **after** this plan was first built (newest at the bottom). The build and update steps add entries here; never edit or remove existing ones._
+
+<details>
+<summary>{ISO-8601 timestamp} — {short summary of what changed}</summary>
+
+{What changed and why.}
+
+</details>
 
 ````
 

@@ -1,5 +1,6 @@
 ---
-description: Execute an implementation plan with rigorous validation loops
+name: prp-implement
+description: Execute an implementation plan with rigorous validation loops. Use when the user wants to implement or execute a plan file, build a planned feature, or invokes /prp-implement.
 argument-hint: <path/to/plan.md> [--base <branch>]
 ---
 
@@ -179,6 +180,8 @@ Task 1: CREATE src/features/x/models.ts ✅
 Task 2: CREATE src/features/x/service.ts ✅
 Task 3: UPDATE src/routes/index.ts ✅
 ```
+
+**Update the plan's status markers as you go** (newer templates use `[ ] / [wip] / [x] / [f]`): set a task to `[wip]` when you start it and `[x]` when its validation passes — or `[f]` if it cannot be made to pass (record why in the plan's Agent Notes and continue). Save the plan file after each change so progress survives an interruption. Plans without markers: skip this.
 
 **Deviation Handling:**
 If you must deviate from the plan:
@@ -400,7 +403,18 @@ Compare the original investigation's assessment with what actually happened:
    - Change Status from `in-progress` to `complete`
 4. Save the PRD
 
-### 5.4 Archive Plan
+### 5.4 Update Plan Lifecycle & Amendments
+
+**If the plan has a `## Lifecycle (append-only)` / `## Amendments` section (newer template), update it before archiving — append-only, never overwrite existing entries:**
+
+- Append today's ISO-8601 timestamp to **Modified**
+- Append the implementing commit SHA(s) to **Commits**
+- Append your agent/model + session id to **Agent / Session**
+- Append one **Amendments** entry (newest at bottom) summarizing what was built and any deviations
+
+Older plans without these sections: skip this step.
+
+### 5.5 Archive Plan
 
 ```bash
 mkdir -p .claude/PRPs/plans/completed
@@ -411,6 +425,7 @@ mv $ARGUMENTS .claude/PRPs/plans/completed/
 
 - [ ] Report created at `.claude/PRPs/reports/`
 - [ ] PRD updated (if applicable) - phase marked complete
+- [ ] Plan Lifecycle/Amendments updated (if the plan uses them)
 - [ ] Plan moved to completed folder
 
 ---
