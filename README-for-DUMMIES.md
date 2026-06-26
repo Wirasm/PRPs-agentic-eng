@@ -1,4 +1,20 @@
-# PRP Commands for Dummies
+# PRP Skills for Dummies
+
+## Contents
+
+- [What is PRP?](#what-is-prp)
+- [Setup](#setup)
+- [The Skills](#the-skills)
+- [The Basic Flow](#the-basic-flow)
+- [The PRP Loop (Autonomous Mode)](#the-prp-loop-autonomous-mode)
+- [The Git Flow](#the-git-flow)
+- [Where Stuff Gets Saved](#where-stuff-gets-saved)
+- [Quick Examples](#quick-examples)
+- [Tips](#tips)
+- [The Old Commands](#the-old-commands)
+- [That's It](#thats-it)
+
+---
 
 ## What is PRP?
 
@@ -8,7 +24,16 @@ You give the AI a detailed plan with context and validation commands. The AI imp
 
 ---
 
-## The Commands (New Simplified Flow)
+## Setup
+
+Get the skills one of two ways (see the main `README.md` for details):
+
+- **Plugin (recommended):** `/plugin marketplace add Wirasm/PRPs-agentic-eng`, then `/plugin install prp-core@prp-marketplace` — every skill is then available everywhere as `/prp-core:<name>`.
+- **Copy:** drop the skills you want from `.claude/skills/` into your project's `.claude/skills/`.
+
+---
+
+## The Skills
 
 ### Core Workflow
 
