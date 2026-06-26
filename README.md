@@ -57,14 +57,23 @@ A PRP keeps the goal and justification sections of a PRD yet adds AI-critical la
 
 ## Quick Start
 
-### Option 1: Copy Commands to Your Project
+### Option 1: Install the plugin (recommended)
 
 ```bash
-# From your project root
-cp -r /path/to/PRPs-agentic-eng/.claude/commands/prp-core .claude/commands/
+/plugin marketplace add Wirasm/PRPs-agentic-eng
+/plugin install prp-core@prp-marketplace
 ```
 
-### Option 2: Clone Repository
+Every skill is then available across all your projects as `/prp-core:<name>`, updated centrally.
+
+### Option 2: Copy the skills you want
+
+```bash
+# From your project root — copy individual skills (or the whole folder)
+cp -r /path/to/PRPs-agentic-eng/.claude/skills/prp-plan .claude/skills/
+```
+
+### Option 3: Clone the repository
 
 ```bash
 git clone https://github.com/Wirasm/PRPs-agentic-eng.git
@@ -73,9 +82,9 @@ cd PRPs-agentic-eng
 
 ---
 
-## Commands
+## Skills
 
-The `.claude/commands/prp-core/` directory contains the core PRP workflow commands:
+The `.claude/skills/` directory contains the core PRP workflow as Agent Skills — also distributed as the `prp-core` plugin (invoke as `/prp-core:<name>`):
 
 ### Core Workflow
 
@@ -241,7 +250,7 @@ PRDs include an Implementation Phases table for tracking progress:
 ```
 your-project/
 ├── .claude/
-│   ├── commands/prp-core/   # PRP commands
+│   ├── skills/              # PRP skills (or install the prp-core plugin)
 │   ├── PRPs/                # Generated artifacts
 │   └── agents/              # Custom subagents
 ├── PRPs/
