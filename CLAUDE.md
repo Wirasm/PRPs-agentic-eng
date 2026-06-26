@@ -1,156 +1,54 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude when working **on this repository** — what it is, the philosophy behind it, and how to improve its skills and assets.
 
-## Project Nature
+## What this repo is
 
-This is a **PRP (Product Requirement Prompt) Framework** repository, not a traditional software project. The core concept: **"PRP = PRD + curated codebase intelligence + agent/runbook"** - designed to enable AI agents to ship production-ready code on the first pass.
+A personal **PRP (Product Requirement Prompt) framework** — an agentic-engineering workflow packaged as Claude Code **Agent Skills**. It is not an application: its "source" is *prompts and assets* — skills, agents, templates, and curated docs.
 
-## Core Architecture
+**PRP = PRD + curated codebase intelligence + agent/runbook** — the minimum context an AI needs to ship a vertical slice of working software in one pass.
 
-### Command-Driven System
+This framework is **load-bearing**: it's used on real, active projects every day. Treat changes accordingly — preserve behavior, stay conservative, and don't destabilize working skills for the sake of elegance.
 
-- **pre-configured Claude Code commands** in `.claude/commands/`
-- Commands organized by function:
-  - `prp-core/` - Core PRP workflow (creation and execution)
-  - `prp-commands/` - Legacy PRP workflows (story, base, planning variants)
-  - `development/` - Core development utilities (prime-core, onboarding, debug)
-  - `code-quality/` - Review and refactoring commands
-  - `rapid-development/experimental/` - Parallel PRP creation and hackathon tools
-  - `git-operations/` - Conflict resolution and smart git operations
+## Philosophy
 
-### Template-Based Methodology
+The principles that govern everything here:
 
-- **PRP Templates** in `PRPs/templates/` follow structured format with validation loops
-- **Context-Rich Approach**: Every PRP must include comprehensive documentation, examples, and gotchas
-- **Validation-First Design**: Each PRP contains executable validation gates (syntax, tests, integration)
+- **Context is King** — give the agent all the context it needs (inline, in references, or fetched at runtime), curated, never dumped.
+- **Validation loops** — workflow skills ship executable gates the agent loops on until green; prefer an authoritative external check over a self-reported "done."
+- **Information dense** — real patterns, real `file:line`, real commands; no filler, no restating what the model already knows.
+- **Progressive success** — ship the lean spine first, validate, then enrich.
+- **Prescribe the craft, not the content** — be strict on *how* a skill is built; stay agnostic about *what* a given skill or its output should contain (that's per-project, the author's call). The one deliberate escape hatch is a free-form "Agent Notes" canvas.
+- **One source of truth** — a skill lives in one place; if it must exist in two, generate/sync one from the other rather than hand-maintaining both.
+- **Structure implies a maintainer** — never add a stateful section (status markers, lifecycle, amendments) that nothing keeps current.
+- **Fidelity first** — when porting or refactoring, preserve behavior exactly and prove it, *then* optimize.
 
-### AI Documentation Curation
+## What lives where
 
-- `PRPs/ai_docs/` contains curated Claude Code documentation for context injection
-- `claude_md_files/` provides framework-specific CLAUDE.md examples
+- **`.claude/skills/`** — the skills, and the working **source of truth**. Each is a self-contained Agent Skill: a `SKILL.md` spine plus optional `references/`, `templates/`, `scripts/`.
+- **`plugins/prp-core/`** — the same skills + agents + hooks packaged as a distributable plugin. It is a **mirror of `.claude/skills/`, currently synced by hand** — change a skill in both. The only intentional difference is the `prp-loop` launcher path (`.claude/PRPs/scripts/prp_loop.py` vs `${CLAUDE_PLUGIN_ROOT}/skills/prp-loop/scripts/prp_loop.py`).
+- **`.claude/agents/`, `plugins/prp-core/agents/`** — advisory (read-only) review/research subagents.
+- **`claude_md_files/`** — framework-specific `CLAUDE.md` examples (Rust, Python, Node, React, …).
+- **`PRPs/templates/`, `PRPs/ai_docs/`** — PRP templates and curated reference docs.
+- **`old-prp-commands/`** — the retired slash-command generation. **Reference only — do not maintain or extend it.**
 
-## Development Commands
+## How to improve skills and assets
 
-### PRP Execution
+1. **Author or refactor with `prp-meta-skill`** (`/prp-core:prp-meta-skill`). It encodes the craft: lean `SKILL.md`, detail in `references/`, output shapes in `templates/`, a third-person trigger-rich `description`, an imperative body, no duplication, and self-containment (no cross-skill file references).
+2. **Classify the skill type** (workflow / artifact-generator / knowledge / tool-wrapper) and apply only the principles that fit — don't force phases or validation loops onto a knowledge skill.
+3. **Keep `.claude/skills/` and `plugins/prp-core/skills/` in sync** whenever you touch a skill.
+4. **Bundled scripts must be location-agnostic** — derive the project root from git/cwd, never from `__file__`; the script operates on the user's project, not the skill directory.
+5. **Validate the change**: skills are markdown (nothing to build); `prp_loop.py` must pass `python3 -m py_compile`; the real test is triggering the skill and exercising it end-to-end.
 
-```bash
-# Interactive mode (recommended for development)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --interactive
+## Conventions
 
-# Headless mode (for CI/CD)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format json
+- **Commits & PRs:** conventional style (`feat(prp-core): …`, `refactor(…): …`), written as a human would — no AI attribution, no `Co-Authored-By: Claude`.
+- **Branches:** work on a feature branch; `main` and `development` are the primary branches and are kept in sync.
+- **Contributing:** see `CONTRIBUTING.md` — changes are scrutinized because the skills are load-bearing.
 
-# Streaming JSON (for real-time monitoring)
-uv run PRPs/scripts/prp_runner.py --prp [prp-name] --output-format stream-json
-```
+## Don't
 
-### Key Claude Commands
-
-**Core PRP Workflow (Recommended)**:
-- `/prp-core-run-all` - Run complete PRP workflow from feature to PR (orchestrates all steps below)
-- `/prp-core-new-branch` - Create conventional git branch for feature
-- `/prp-core-create` - Create comprehensive feature PRP with deep codebase analysis
-- `/prp-core-execute` - Execute feature PRP with sequential validation
-- `/prp-core-commit` - Create atomic git commit with validation
-- `/prp-core-pr` - Push changes and create PR with comprehensive description
-
-**Agent Skills**:
-- `prp-loop` - Autonomous skill that orchestrates the complete PRP workflow (plan → implement → pr → review, looping review→fix until clean) when you request to ship a feature end to end using PRP methodology
-
-**Legacy PRP Workflows**:
-- `/prp-story-create` - Convert user story/task into tactical PRP
-- `/prp-story-execute` - Execute story PRP
-- `/prp-base-create` - Generate comprehensive PRPs with research
-- `/prp-base-execute` - Execute PRPs against codebase
-- `/prp-planning-create` - Create planning documents with diagrams
-
-**Development Utilities**:
-- `/prime-core` - Prime Claude with project context
-- `/review-staged-unstaged` - Review git changes using PRP methodology
-- `/smart-commit` - Analyze changes and create smart git commit
-
-## Critical Success Patterns
-
-### The PRP Methodology
-
-1. **Context is King**: Include ALL necessary documentation, examples, and caveats
-2. **Validation Loops**: Provide executable tests/lints the AI can run and fix
-3. **Information Dense**: Use keywords and patterns from the codebase
-4. **Progressive Success**: Start simple, validate, then enhance
-
-### PRP Structure Requirements
-
-- **Goal**: Specific end state and desires
-- **Why**: Business value and user impact
-- **What**: User-visible behavior and technical requirements
-- **All Needed Context**: Documentation URLs, code examples, gotchas, patterns
-- **Implementation Blueprint**: Pseudocode with critical details and task lists
-- **Validation Loop**: Executable commands for syntax, tests, integration
-
-### Validation Gates (Must be Executable)
-
-```bash
-# Level 1: Syntax & Style
-ruff check --fix && mypy .
-
-# Level 2: Unit Tests
-uv run pytest tests/ -v
-
-# Level 3: Integration
-uv run uvicorn main:app --reload
-curl -X POST http://localhost:8000/endpoint -H "Content-Type: application/json" -d '{...}'
-
-# Level 4: Deployment
-# mcp servers, or other creative ways to self validate
-```
-
-## Anti-Patterns to Avoid
-
-- L Don't create minimal context prompts - context is everything - the PRP must be comprehensive and self-contained, reference relevant documentation and examples.
-- L Don't skip validation steps - they're critical for one-pass success - The better The AI is at running the validation loop, the more likely it is to succeed.
-- L Don't ignore the structured PRP format - it's battle-tested
-- L Don't create new patterns when existing templates work
-- L Don't hardcode values that should be config
-- L Don't catch all exceptions - be specific
-
-## Working with This Framework
-
-### When Creating new PRPs
-
-1. **Context Process**: New PRPs must consist of context sections, Context is King!
-2.
-
-### When Executing PRPs
-
-1. **Load PRP**: Read and understand all context and requirements
-2. **ULTRATHINK**: Create comprehensive plan, break down into todos, use subagents, batch tool etc check prps/ai_docs/
-3. **Execute**: Implement following the blueprint
-4. **Validate**: Run each validation command, fix failures
-5. **Complete**: Ensure all checklist items done
-
-### Command Usage
-
-- Read the .claude/commands directory
-- Access via `/` prefix in Claude Code
-- Commands are self-documenting with argument placeholders
-- Use parallel creation commands for rapid development
-- Leverage existing review and refactoring commands
-
-## Project Structure Understanding
-
-```
-PRPs-agentic-eng/
-.claude/
-  commands/           # 28+ Claude Code commands
-  settings.local.json # Tool permissions
-PRPs/
-  templates/          # PRP templates with validation
-  scripts/           # PRP runner and utilities
-  ai_docs/           # Curated Claude Code documentation
-   *.md               # Active and example PRPs
- claude_md_files/        # Framework-specific CLAUDE.md examples
- pyproject.toml         # Python package configuration
-```
-
-Remember: This framework is about **one-pass implementation success through comprehensive context and validation**. Every PRP should contain the exact context for an AI agent to successfully implement working code in a single pass.
+- Don't treat this as an application — there are no app build/test/deploy gates to add here.
+- Don't maintain or extend `old-prp-commands/`.
+- Don't break a working skill's behavior for a refactor — fidelity first.
+- Don't add cross-skill file references — it breaks self-containment and the plugin sync.
