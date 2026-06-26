@@ -38,7 +38,22 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]  # .claude/PRPs/scripts/ -> repo root
+def _project_root() -> Path:
+    """The project being operated on — the user's repo, NOT where this script lives.
+    Location-agnostic: derive the root from git (else cwd), so the identical script
+    works whether it sits in .claude/PRPs/scripts/ or is bundled inside a plugin skill."""
+    try:
+        top = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
+        ).stdout.strip()
+        if top:
+            return Path(top)
+    except Exception:
+        pass
+    return Path.cwd()
+
+
+ROOT = _project_root()  # the user's project root (git toplevel, else cwd)
 STATE_FILE = ROOT / ".claude" / "prp-loop.state.json"
 PLANS_DIR = ROOT / ".claude" / "PRPs" / "plans"
 REVIEW_DIR = ROOT / ".claude" / "PRPs" / "reviews"
