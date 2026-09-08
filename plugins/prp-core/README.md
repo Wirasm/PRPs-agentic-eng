@@ -39,7 +39,7 @@ Everything here ships as **skills** (not slash commands). Most are both **user-i
 
 | Skill | Description |
 |-------|-------------|
-| `/prp-core:prp-maintainer-triage` | Route a contributor PR or reported issue through its lightweight maintainer triage workflow |
+| `/prp-core:prp-maintainer-triage` | Route a contributor PR or reported issue through its lightweight maintainer triage workflow. A contributor PR that links no issue is closed, after first opening a tracking issue when the idea is worth keeping |
 
 ### Research & debug
 

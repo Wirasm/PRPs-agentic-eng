@@ -38,9 +38,12 @@ The framework documents its own conventions — use the **`prp-meta-skill`** (`/
 
 ## Submitting a PR
 
-1. Keep it focused — one capability or fix per PR.
-2. Mirror the existing skill structure and conventions.
-3. Explain what changed and why; reference any related issue.
-4. Expect questions, and expect load-bearing changes to get extra scrutiny.
+**Open an issue first, and link it from the PR.** A pull request that links no issue gets closed, even when the idea is good. If the idea is good, I'll open the issue myself, say so on the closed PR, and you're very welcome to send a fresh PR that links it. This isn't bureaucracy. These skills are load-bearing, so I want scope agreed before either of us spends time on a diff.
+
+1. Link the issue the PR implements.
+2. Keep it focused — one capability or fix per PR.
+3. Mirror the existing skill structure and conventions.
+4. Explain what changed and why.
+5. Expect questions, and expect load-bearing changes to get extra scrutiny.
 
 Thanks for understanding — and for building on this.
