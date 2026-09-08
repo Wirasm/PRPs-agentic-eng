@@ -1,6 +1,6 @@
 ---
 name: prp-maintainer-triage
-description: Quickly triages a contributor pull request or reported issue against repository policy and lightweight evidence without full review or root-cause analysis. Use when the user asks to "triage this contributor PR", "sanity-check this PR", "triage this issue", "reproduce this reported issue", "check whether this bug still exists", or invokes /prp-maintainer-triage.
+description: Quickly triages a contributor pull request or reported issue against repository policy and lightweight evidence without full review or root-cause analysis. Publishes the disposition to GitHub, and on a contributor pull request that links no issue it may open a tracking issue and close the pull request. Use when the user asks to "triage this contributor PR", "sanity-check this PR", "triage this issue", "reproduce this reported issue", "check whether this bug still exists", or invokes /prp-maintainer-triage.
 argument-hint: <issue-or-pr-number|url> [--no-publish]
 ---
 
