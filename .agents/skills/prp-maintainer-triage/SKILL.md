@@ -1,7 +1,6 @@
 ---
 name: prp-maintainer-triage
 description: Quickly triages a contributor pull request or reported issue against repository policy and lightweight evidence without full review or root-cause analysis. Use when the user asks to "triage this contributor PR", "sanity-check this PR", "triage this issue", "reproduce this reported issue", "check whether this bug still exists", or invokes $prp-maintainer-triage.
-disable-model-invocation: true
 ---
 
 > **Arguments:** `$ARGUMENTS` (and `$1`, `$2`, ...) refer to the arguments given when this skill was invoked. Take them from the user's request; if absent, infer them from the conversation.
